@@ -16,6 +16,8 @@
 ; | Exported procedures |
 ; +---------------------+
 
+;;; Package:
+;;;   csc151/square
 ;;; Procedure:
 ;;;   square
 ;;; Parameters:
