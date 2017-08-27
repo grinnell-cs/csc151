@@ -3,7 +3,7 @@
 ;;; File:
 ;;;   lists.rkt
 ;;; Summary:
-;;;   A variety of procedure associated with listss.
+;;;   A variety of procedure associated with lists.
 ;;; Author:
 ;;;   Samuel A. Rebelsky
 
