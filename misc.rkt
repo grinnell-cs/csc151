@@ -9,18 +9,70 @@
 
 (provide
   (contract-out
-    (writeln (-> any/c any))))
+    [log-addition (-> number? number? number?)]
+    [log-value (-> any/c any)]
+    [writeln (-> any/c any)]))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
 ; +---------------------+
+
+;;; Procedure:
+;;;   csc151/misc
+;;; Procedure:
+;;;   log-addition
+;;; Parameters:
+;;;   a, a number
+;;;   b, a number
+;;; Purpose:
+;;;   Add two numbers and log a note that we did the addition
+;;; Produces:
+;;;   sum, a number
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   sum = (+ a b)
+;;;   A report of the addition has been logged to standard output.
+(define log-addition
+  (lambda (a b)
+    (let ([result (+ a b)])
+      (display a)
+      (display " + ")
+      (display b)
+      (display " = ")
+      (display result)
+      (newline)
+      result)))
+
+;;; Package:
+;;;   csc151/misc
+;;; Procedure:
+;;;   log-value
+;;; Parameters:
+;;;   val, a Scheme value
+;;; Purpose:
+;;;   Writes val followed by a newline
+;;; Produces:
+;;;   val, the same Scheme value
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   A representation of val appears on the output, followed by 
+;;;   a newline.
+;;; Philosophy:
+;;;   Useful when we want to track what is happening in our program.
+(define log-value
+  (lambda (val)
+    (write val)
+    (newline)
+    val))
 
 ;;; Package:
 ;;;   csc151/misc
 ;;; Procedure:
 ;;;   writeln
 ;;; Parameters:
-;;;   val, a scheme value
+;;;   val, a Scheme value
 ;;; Purpose:
 ;;;   Writes val followed by a newline
 ;;; Produces:
