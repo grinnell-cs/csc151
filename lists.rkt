@@ -9,6 +9,7 @@
 
 (provide
   (contract-out
+    [index-of (-> any/c list? integer?)]
     [iota (-> natural-number/c (listof integer?))]
     [map1 (-> (-> any/c any) list? list?)]
     [reduce (-> (-> any/c any/c any) list? any/c)]
@@ -32,6 +33,37 @@
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
 ; +---------------------+
+
+;;; Package:
+;;;   csc151/lists
+;;; Procedure:
+;;;   index-of
+;;; Parameters:
+;;;   val, a Scheme val
+;;;   lst, a list
+;;; Purpose:
+;;;   Find the index of val in lst
+;;; Produces:
+;;;   index, an integer
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   if index is -1, val does not appear in lst.
+;;;   Otherwise,
+;;;     (list-ref lst index) is val
+;;;     For no i smaller than index is (list-ref lst i) val.
+(define index-of
+  (lambda (val lst)
+    (let kernel ([pos 0]
+                 [remaining lst])
+      (cond
+        [(null? remaining)
+         -1]
+        [(equal? val (car remaining))
+         pos]
+        [else
+         (kernel (+ pos 1) (cdr remaining))]))))
+
 
 ;;; Package:
 ;;;   csc151/lists
