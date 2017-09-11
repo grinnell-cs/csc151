@@ -63,32 +63,35 @@
 ;;;   This will almost certainly crash if there's a backslash at the end of a line.
 (define csv-row-w/sep->list
   (let ([finish
-         (lambda (chars)
+         (lambda (chars force-string?)
            (let* ([str (list->string (reverse chars))]
                   [num (string->number str)])
-             (if num num str)))])
+             (if (and (not force-string?) num) num str)))])
     (lambda (row sep)
       (let kernel ([pos 0]
                    [entries null]
                    [entry null]
-                   [quoted? #f])
+                   [quoted? #f]
+                   [force-string? #f])
         (if (>= pos (string-length row))
             (if (null? entry)
                 (reverse entries)
-                (reverse (cons (finish entry) entries)))
+                (reverse (cons (finish entry force-string?) entries)))
             (let ([ch (string-ref row pos)])
               (cond
-                ; Separator End the entry
+                ; Separator: End the entry
                 [(and (not quoted?) (eq? ch sep))
                  (kernel (+ pos 1)
-                         (cons (finish entry) entries)
+                         (cons (finish entry force-string?) entries)
                          null
+                         #f
                          #f)]
                 ; Quotation mark at the beginning of an entry
                 [(and (null? entry) (eq? ch #\"))
                  (kernel (+ pos 1)
                          entries
                          null
+                         #t
                          #t)]
                 ; Quotation mark in the middle of an entry.  It matches and we're done
                 ; with the quote.  I think.
@@ -96,20 +99,23 @@
                  (kernel (+ pos 1)
                          entries
                          entry
-                         #f)]
+                         #f
+                         #t)]
                 ; Backslash in the middle of an entry,  It means to treat the next thing
                 ; verbatin.  I think that holds in every case.
                 [(eq? ch #\\)
                  (kernel (+ pos 2)
                          entries
                          (cons (string-ref row (+ pos 1)) entry)
-                         quoted?)]
+                         quoted?
+                         force-string?)]
                 ; Everything else: Just add to the entry
                 [else
                  (kernel (+ pos 1)
                          entries
                          (cons ch entry)
-                         quoted?)])))))))
+                         quoted?
+                         force-string?)])))))))
   
 ;;; Procedure:
 ;;;   read-csv-file
