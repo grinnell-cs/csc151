@@ -1,2 +1,5 @@
 # Racket package stuff
 compiled/
+
+# Temp files
+*~
