@@ -13,7 +13,7 @@
 (require "misc.rkt")
 (require "hop.rkt")
 (require "numbers.rkt")
-(require "tables.rkt")
+(require "csv.rkt")
 (require "files.rkt")
 
 (provide
@@ -22,5 +22,5 @@
   (all-from-out "misc.rkt")
   (all-from-out "hop.rkt")
   (all-from-out "numbers.rkt")
-  (all-from-out "tables.rkt")
+  (all-from-out "csv.rkt")
   (all-from-out "files.rkt"))
