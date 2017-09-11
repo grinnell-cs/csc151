@@ -73,9 +73,7 @@
                    [quoted? #f]
                    [force-string? #f])
         (if (>= pos (string-length row))
-            (if (null? entry)
-                (reverse entries)
-                (reverse (cons (finish entry force-string?) entries)))
+            (reverse (cons (finish entry force-string?) entries))
             (let ([ch (string-ref row pos)])
               (cond
                 ; Separator: End the entry
