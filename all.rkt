@@ -12,10 +12,12 @@
 (require "misc.rkt")
 (require "hop.rkt")
 (require "numbers.rkt")
+(require "tables.rkt")
 
 (provide
   (all-from-out "square.rkt")
   (all-from-out "lists.rkt")
   (all-from-out "misc.rkt")
   (all-from-out "hop.rkt")
-  (all-from-out "numbers.rkt"))
+  (all-from-out "numbers.rkt")
+  (all-from-out "tables.rkt"))
