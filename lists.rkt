@@ -15,6 +15,7 @@
     [reduce (-> (-> any/c any/c any) list? any/c)]
     [reduce-left (-> (-> any/c any/c any) list? any/c)]
     [reduce-right (-> (-> any/c any/c any) list? any/c)]
+    [tally-all (-> list? list?)]
     ))
 
 ; +-------------------------------+----------------------------------
@@ -197,3 +198,38 @@
       [else
        (fun (car lst) (reduce-right fun (cdr lst)))])))
 
+;;; Procedure:
+;;;   tally-all
+;;; Parameters:
+;;;   lst, a list of values
+;;; Purpose:
+;;;   Tallies all of the values in lst
+;;; Produces:
+;;;   tallies, a list of (key count) lists.
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   * If val appears k times in lst, then (val k) appears in tallies
+;;;   * If (val k) appears in tallies, then val appears k times in lst
+;;;   * Each value in lst is the car of exactly one list in tallies.
+(define tally-all
+  (let ([update-tallies
+         (lambda (val tallies)
+           (let kernel [(remaining tallies)]
+             (if (null? remaining)
+                 (cons (vector val 1) tallies)
+                 (let ([current-tally (car remaining)])
+                   (cond
+                     [(equal? val (vector-ref current-tally 0))
+                      (vector-set! current-tally 1 
+                                   (+ (vector-ref current-tally 1) 1))
+                      tallies]
+                     [else
+                       (kernel (cdr remaining))])))))])
+    (lambda (lst)
+      (let kernel ([rest lst]
+                   [tallies null])
+        (if (null? rest)
+            (map vector->list (reverse tallies))
+            (kernel (cdr rest)
+                    (update-tallies (car rest) tallies)))))))
