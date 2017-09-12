@@ -11,6 +11,7 @@
   (contract-out
     [all (-> procedure? list? boolean?)]
     [any (-> procedure? list? boolean?)]
+    [comparator (-> procedure? procedure? procedure?)]
     [left-section (-> procedure? any/c procedure?)]
     [l-s (-> procedure? any/c procedure?)]
     [right-section (-> procedure? any/c procedure?)]
@@ -67,6 +68,27 @@
     (and (not (null? lst))
          (or (pred? (car lst))
              (any pred? (cdr lst))))))
+
+;;; Package:
+;;;   csc151/hop
+;;; Procedure:
+;;;   comparator
+;;; Parameters:
+;;;   compare?, a binary comparator
+;;;   extract, a unary procedure
+;;; Purpose:
+;;;   Creates a comparator that takes two values, applies extract
+;;;   to each, and then compares the results of both.
+;;; Produces:
+;;;   comp?, a binary comparator
+;;; Preconditions:
+;;;   compare? can be applied to the results of extract.
+;;; Postconditions:
+;;;   (comp? v1 v2) = (compare? (extract v1) (extract v2))
+(define comparator
+  (lambda (compare? extract)
+    (lambda (v1 v2)
+      (compare? (extract v1) (extract v2)))))
 
 ;;; Package:
 ;;;   csc151/hop
