@@ -67,53 +67,60 @@
                   [num (string->number str)])
              (if (and (not force-string?) num) num str)))])
     (lambda (row sep)
-      (let kernel ([pos 0]
-                   [entries null]
-                   [entry null]
-                   [quoted? #f]
-                   [force-string? #f])
-        (if (>= pos (string-length row))
-            (reverse (cons (finish entry force-string?) entries))
-            (let ([ch (string-ref row pos)])
-              (cond
-                ; Separator: End the entry
-                [(and (not quoted?) (eq? ch sep))
-                 (kernel (+ pos 1)
-                         (cons (finish entry force-string?) entries)
-                         null
-                         #f
-                         #f)]
-                ; Quotation mark at the beginning of an entry
-                [(and (null? entry) (eq? ch #\"))
-                 (kernel (+ pos 1)
-                         entries
-                         null
-                         #t
-                         #t)]
-                ; Quotation mark in the middle of an entry.  It matches and we're done
-                ; with the quote.  I think.
-                [(and quoted? (eq? ch #\"))
-                 (kernel (+ pos 1)
-                         entries
-                         entry
-                         #f
-                         #t)]
-                ; Backslash in the middle of an entry,  It means to treat the next thing
-                ; verbatin.  I think that holds in every case.
-                [(eq? ch #\\)
-                 (kernel (+ pos 2)
-                         entries
-                         (cons (string-ref row (+ pos 1)) entry)
-                         quoted?
-                         force-string?)]
-                ; Everything else: Just add to the entry
-                [else
-                 (kernel (+ pos 1)
-                         entries
-                         (cons ch entry)
-                         quoted?
-                         force-string?)])))))))
-  
+      (let ([char-at
+             (lambda (pos)
+               (if (< pos (string-length row))
+                   (string-ref row pos)
+                   eof))])
+        (let kernel ([pos 0]
+                     [entries null]
+                     [entry null]
+                     [quoted? #f]
+                     [force-string? #f])
+          (let ([ch (char-at pos)])
+            (cond
+              ; End of string
+              [(eof-object? ch)
+               (reverse (cons (finish entry force-string?) entries))]
+              ; Separator: End the entry
+              [(and (not quoted?) (eq? ch sep))
+               (kernel (+ pos 1)
+                       (cons (finish entry force-string?) entries)
+                       null
+                       #f
+                       #f)]
+              ; Quotation mark at the beginning of an entry
+              [(and (null? entry) (not quoted?) (eq? ch #\"))
+               (kernel (+ pos 1)
+                       entries
+                       null
+                       #t
+                       #t)]
+              ; Quotation mark in the middle of an entry.  It could
+              ; represent the end of the entry, or at least the
+              ; quoted part of the entry.  It could be quoting
+              ; the next double quote.
+              [(and quoted? (eq? ch #\"))
+               (let ([next (char-at (+ pos 1))])
+                 (if (eq? next #\")
+                     (kernel (+ pos 2)
+                             entries
+                             (cons #\" entry)
+                             #t
+                             #t)
+                     (kernel (+ pos 1)
+                             entries
+                             entry
+                             #f
+                             #t)))]
+              ; Everything else: Just add to the entry
+              [else
+               (kernel (+ pos 1)
+                       entries
+                       (cons ch entry)
+                       quoted?
+                       force-string?)])))))))
+
 ;;; Package:
 ;;;   csc151/csv
 ;;; Procedure:
