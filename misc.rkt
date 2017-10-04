@@ -87,3 +87,27 @@
     (write val)
     (newline)))
 
+;;; Package:
+;;;   csc151/misc
+;;; Procedure:
+;;;   show-call
+;;; Parameters:
+;;;   proc, a symbol
+;;;   val1 ... valn, a bunch of Scheme values
+;;; Purpose:
+;;;   Shows a procedure call
+;;; Produces:
+;;;   [Nothing; called for the side effects.]
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   A representation of the procedure call appears on the output,
+;;;   followed by a newline.
+(define show-call
+  (lambda (proc . params)
+    (display "(")
+    (display proc)
+    (for-each (lambda (param) (display " ") (write param))
+              params)
+    (display ")")
+    (newline)))
