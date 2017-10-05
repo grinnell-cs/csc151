@@ -11,7 +11,8 @@
   (contract-out
     [log-addition (-> number? number? number?)]
     [log-value (-> any/c any)]
-    [writeln (-> any/c any)]))
+    [writeln (-> any/c any)]
+    [show-call (->* (symbol?) () #:rest (listof any/c) any)]))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
