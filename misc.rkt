@@ -11,6 +11,7 @@
   (contract-out
     [log-addition (-> number? number? number?)]
     [log-value (-> any/c any)]
+    [member? (-> any/c (listof any/c) boolean?)]
     [writeln (-> any/c any)]
     [show-call (->* (symbol?) () #:rest (listof any/c) any)]))
 
@@ -67,6 +68,29 @@
     (write val)
     (newline)
     val))
+
+;;; Package:
+;;;   csc151/misc
+;;; Procedure:
+;;;   member?
+;;; Parameters:
+;;;   val, a Scheme value
+;;;   lst, a list
+;;; Purpose:
+;;;   Determine if `val` appears in `lst.
+;;; Produces:
+;;;   in-list?, a Boolean
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   * If there exists an i s.t. (equal? val (list-ref lst i)), then
+;;;     in-list? is true (#t)
+;;;   * Otherwise, in-list? is false (#f)
+(define member?
+   (lambda (val lst)
+     (and (not (null? lst))
+          (or (equal? val (car lst))
+              (member? val (cdr lst))))))
 
 ;;; Package:
 ;;;   csc151/misc
