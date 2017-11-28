@@ -7,6 +7,8 @@
 ;;; Author:
 ;;;   Samuel A. Rebelsky
 
+(require csc151/hop)
+
 (provide (all-defined-out))
 
 ; +-------------------+----------------------------------------------
