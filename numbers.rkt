@@ -57,3 +57,23 @@
   (lambda (val)
     (+ val 1)))
 
+;;; Package:
+;;;   csc151/numbers
+;;; Procedure:
+;;;   double
+;;; Parameters:
+;;;   val, a number
+;;; Purpose:
+;;;   Multiply val by 2
+;;; Produces:
+;;;   doubled, a number
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   doubled = (* val 2)
+;;; Ponderings:
+;;;   An obvious procedure, but one that is often useful.
+(define double
+  (lambda (val)
+    (* val 2)))
+
