@@ -10,6 +10,7 @@
 (provide
   (contract-out
     [decrement (-> number? number?)]
+    [double (-> number? number?)]
     [increment (-> number? number?)]
     ))
 
