@@ -16,7 +16,7 @@
     [reduce-left (-> (-> any/c any/c any) list? any/c)]
     [reduce-right (-> (-> any/c any/c any) list? any/c)]
     [tally-all (-> list? list?)]
-    [take-random (-> list? integer? list?]
+    [take-random (-> list? integer? list?)]
     ))
 
 ; +-------------------------------+----------------------------------
