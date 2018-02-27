@@ -16,6 +16,7 @@
     [reduce-left (-> (-> any/c any/c any) list? any/c)]
     [reduce-right (-> (-> any/c any/c any) list? any/c)]
     [tally-all (-> list? list?)]
+    [take-random (-> list? integer? list?]
     ))
 
 ; +-------------------------------+----------------------------------
@@ -233,3 +234,36 @@
             (map vector->list (reverse tallies))
             (kernel (cdr rest)
                     (update-tallies (car rest) tallies)))))))
+
+;;; Procedure:
+;;;   take-random
+;;; Parameters:
+;;;   lst, a list
+;;;   n, a non-negative integer
+;;; Purpose:
+;;;   Grab n "randomly selected elements" from lst
+;;; Produces:
+;;;   elements, a list
+;;; Preconditions:
+;;;   n <= (length lst)
+;;; Postconditions:
+;;;   (length elements) = n
+;;;   Every element in elements appears in lst.
+;;;   Every element in elements represents a separate element of lst.
+(define take-random
+  (lambda (lst n)
+    (let kernel ([remaining lst]
+                 [len (length lst)]
+                 [n n])
+      (cond
+        [(or (= n 0) (= len 0))
+         null]
+        [(<= (random) (/ n len))
+         (cons (car remaining)
+               (kernel (cdr remaining)
+                       (- len 1)
+                       (- n 1)))]
+        [else        
+         (kernel (cdr remaining)
+                 (- len 1)         
+                 n)]))))
