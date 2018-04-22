@@ -14,11 +14,7 @@
   [file->words (-> string? (listof string?))]
   [read-word (-> input-port? string?)]
   [skip-char (-> input-port? char? boolean?)]
-  [read-until
-   (case->
-    (-> input-port? procedure? string?)
-    (-> input-port? char? string?)
-    (-> input-port? string? string?))]))
+  [read-until (-> input-port? (or/c procedure? char? string?) string?)]))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
