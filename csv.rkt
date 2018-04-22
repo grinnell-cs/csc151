@@ -7,6 +7,8 @@
 ;;; Author:
 ;;;   Samuel A. Rebelsky
 
+(require "files.rkt")
+
 (provide
  (contract-out
   [csv-row->list (-> string? list?)]
