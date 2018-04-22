@@ -14,7 +14,7 @@
   [file->words (-> string? (listof string?))]
   [read-word (-> input-port? string?)]
   [skip-char (-> input-port? char? boolean?)]
-  [read-until (-> input-port? char? string?)]))
+  [read-until (-> input-port? (disjoin procedure? char?) string?)]))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -110,25 +110,40 @@
 ;;;   read-until
 ;;; Parameters:
 ;;;   port, an input port
-;;;   terminator, a character
+;;;   terminator, a character, string, or predicate
 ;;; Purpose:
-;;;   Read the characters until you reach terminator (or eof).
+;;;   Read the characters until you reach terminator (or eof) (or
+;;;   the predicate holds..
 ;;; Produces:
 ;;;   str, a string
 ;;; Preconditions:
 ;;;   [No additional]
 ;;; Postconditions:
 ;;;   * str represents the sequence of characters from the file pointer
-;;;     of port at the beginning until the first occurence of terminator,
-;;;     not including that occurence.
+;;;     of port at the beginning until (a) the first occurence of terminator,
+;;;     if terminator is a character, (b) a character that appears in terminator,
+;;;     it terminator is a string, or (c) a character for which terminator
+;;;     holds, if terminator is a predicate.  str does not include that
+;;;     character.
 ;;;   * the file pointer has been advanced appropriately.
 (define read-until
   (lambda (port terminator)
-    (let kernel ([chars null])
-      (let ([ch (peek-char port)])
-        (if (or (eof-object? ch) (char=? ch terminator))
-            (list->string (reverse chars))
-            (kernel (cons (read-char port) chars)))))))
+    (let [(pred? (cond
+                   [(char? terminator)
+                     (lambda (ch) (char=? ch terminator))]
+                   [(string? terminator)
+                    (lambda (ch) (string-contains? terminator (string ch)))]
+                   [(procedure? terminator)
+                    terminator]
+                   [else
+                    (error "Invalid parameter"
+                           terminator
+                           "expected a character, string, or unary predicate")]))]
+      (let kernel ([chars null])
+        (let ([ch (peek-char port)])
+          (if (or (eof-object? ch) (pred? ch))
+              (list->string (reverse chars))
+              (kernel (cons (read-char port) chars))))))))
 
 ;;; Package:
 ;;;   csc151/files
