@@ -1,5 +1,4 @@
 #lang racket
-(require csc151)
 
 ;;; File:
 ;;;   csv.rkt
