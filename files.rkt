@@ -12,7 +12,9 @@
   [file->chars (-> string? (listof char?))]
   [file->lines (-> string? (listof string?))]
   [file->words (-> string? (listof string?))]
-  [read-word (-> input-port? string?)]))
+  [read-word (-> input-port? string?)]
+  [skip-char (-> input-port? char? boolean?)]
+  [read-until (-> input-port? char? string?)]))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -101,6 +103,59 @@
            (kernel null)]
           [else
            (list->string (reverse chars))])))))
+
+;;; Package:
+;;;   csc151/files
+;;; Procedure:
+;;;   read-until
+;;; Parameters:
+;;;   port, an input port
+;;;   terminator, a character
+;;; Purpose:
+;;;   Read the characters until you reach terminator (or eof).
+;;; Produces:
+;;;   str, a string
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   * str represents the sequence of characters from the file pointer
+;;;     of port at the beginning until the first occurence of terminator,
+;;;     not including that occurence.
+;;;   * the file pointer has been advanced appropriately.
+(define read-until
+  (lambda (port terminator)
+    (let kernel ([chars null])
+      (let ([ch (peek-char port)])
+        (if (or (eof-object? ch) (char=? ch terminator))
+            (list->string (reverse chars))
+            (kernel (cons (read-char port) chars)))))))
+
+;;; Package:
+;;;   csc151/files
+;;; Procedure:
+;;;   skip-char
+;;; Parameters:
+;;;   port, an open input port
+;;;   ch, a character
+;;; Purpose:
+;;;   Skip over the next character in the input file if it is ch.
+;;; Produces:
+;;;   skipped?, a Boolean
+;;; Preconditions:
+;;;   [No additional]
+;;; Postconditions:
+;;;   * If (peek-char port) is ch, reads over the character and returns #t
+;;;   * Otherwise, leaves the port unchanged and returns #f
+(define skip-char
+  (lambda (port ch)
+    (let ([next (peek-char port)])
+      (cond
+        [(and (not (eof-object? next))
+              (char=? next ch))
+         (read-char port)
+         #t]
+        [else
+         #f]))))
 
 ; +------------------+-----------------------------------------------
 ; | Local Procedures |
