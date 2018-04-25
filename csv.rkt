@@ -275,7 +275,9 @@
              (or num str)))])
     (lambda (port sep)
       (if (equal? (peek-char port) #\")
-          (read-quoted-csv-string port)
+          (let [(tmp (read-quoted-csv-string port))]
+            (skip-char port sep)
+            tmp)
           (let ([tmp (read-until port
                                  (list->string (list sep #\newline #\return)))])
             (skip-char port sep)
