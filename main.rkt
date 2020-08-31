@@ -8,7 +8,6 @@
 ;;;   Zander Otavka
 ;;;   Samuel A. Rebelsky
 
-(require "square.rkt")
 (require "lists.rkt")
 (require "misc.rkt")
 (require "hop.rkt")
@@ -17,7 +16,6 @@
 (require "csv.rkt")
 
 (provide
-  (all-from-out "square.rkt")
   (all-from-out "lists.rkt")
   (all-from-out "misc.rkt")
   (all-from-out "hop.rkt")
