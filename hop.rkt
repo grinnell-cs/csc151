@@ -6,6 +6,7 @@
 ;;;   A variety of higher-order procedures
 ;;; Author:
 ;;;   Samuel A. Rebelsky
+;;;   Peter-Michael Osera
 
 (provide
   (contract-out
@@ -19,6 +20,7 @@
     ))
 (provide o)
 (provide section)
+(provide ||>)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -251,3 +253,24 @@
                         formals
                         (cons (car params) actuals))])))]))))
 
+;;; Package:
+;;;   csc151/hop
+;;; Procedure:
+;;;   ||>
+;;; Parameters:
+;;;   x, a value of type T
+;;;   fs, a list of functions
+;;; Purpose:
+;;;   The pipeline operator.  Chains invocations of functions found
+;;;   in fs in a left-to-right fashion starting with the value x.
+;;; Produces:
+;;;   result, a value
+;;; Preconditions:
+;;;   The first element of fs is a function of type T -> U1.
+;;;   The ith element of fs is a function of type T(i-1) -> Ti.
+;;; Postconditions:
+;;;   result has type Tk where Tk is the output type of the final
+;;;   function of fs.
+(define ||>
+  (lambda (x . fs)
+    (foldl (lambda (g acc) (g acc)) x fs)))

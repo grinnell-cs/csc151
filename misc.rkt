@@ -6,6 +6,7 @@
 ;;;   A variety of useful procedures.
 ;;; Author:
 ;;;   Samuel A. Rebelsky
+;;;   Peter-Michael Osera
 
 (provide
   (contract-out
@@ -14,6 +15,8 @@
     [member? (-> any/c (listof any/c) boolean?)]
     [writeln (-> any/c any)]
     [show-call (->* (symbol?) () #:rest (listof any/c) any)]))
+
+(provide ??)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -136,3 +139,21 @@
               params)
     (display ")")
     (newline)))
+
+;;; Package:
+;;;   csc151/misc
+;;; Procedure:
+;;;   ??
+;;; Paramters:
+;;;   [Nothing]
+;;; Purpose:
+;;;   Placeholder value for an expression.  Should be used as a zero-
+;;;   argument function call, e.g., (??), in parts of code that
+;;;   should be filled in at a later date.  Raises an error when
+;;;   evaluated.
+;;; Preconditions:
+;;;   [None]
+;;; Postconditions:
+;;;   [None]
+(define ??
+  (lambda () (error "Hole encountered!  Fill me in!")))
