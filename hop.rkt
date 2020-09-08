@@ -20,7 +20,7 @@
     ))
 (provide o)
 (provide section)
-(provide ||>)
+(provide :>)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
