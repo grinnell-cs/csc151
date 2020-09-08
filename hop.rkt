@@ -256,7 +256,7 @@
 ;;; Package:
 ;;;   csc151/hop
 ;;; Procedure:
-;;;   ||>
+;;;   :>
 ;;; Parameters:
 ;;;   x, a value of type T
 ;;;   fs, a list of functions
@@ -271,6 +271,6 @@
 ;;; Postconditions:
 ;;;   result has type Tk where Tk is the output type of the final
 ;;;   function of fs.
-(define ||>
+(define :>
   (lambda (x . fs)
     (foldl (lambda (g acc) (g acc)) x fs)))
