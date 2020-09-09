@@ -17,6 +17,7 @@
     [l-s (-> procedure? any/c procedure?)]
     [right-section (-> procedure? any/c procedure?)]
     [r-s (-> procedure? any/c procedure?)]
+    [tally-value (-> list? any/c integer?)]
     ))
 (provide o)
 (provide section)
@@ -195,6 +196,28 @@
 ;;;   (proc1 left) = (proc2 left right)
 (define r-s right-section)
 
+;;; Package:
+;;;   csc151/hop
+;;; Procedure:
+;;;   tally-value
+;;; Parameters:
+;;;   l, a list
+;;;   v, a value
+;;; Purpose:
+;;;   Counts the number of occurrences of v in l.
+;;; Produces:
+;;;   result, the number of occurrences of v in l.
+;;; Preconditions:
+;;;   [No additional preconditions]
+;;; Postconditions:
+;;;   (<= 0 result (length l))
+(define tally-value
+  (lambda (l v)
+    (foldl (lambda (x acc)
+             (if (equal? x v)
+                 (+ 1 acc)
+                 acc))
+           0 l)))
 
 ; +-----------------+------------------------------------------------
 ; | Exported macros |
