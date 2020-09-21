@@ -53,7 +53,7 @@
 ;;; Postconditions:
 ;;;   lines contains all of the lines in the file, in the order they appear,
 ;;;   but without newlines.
-(define file->line
+(define file->lines
   (lambda (fname)
     (file->stuff fname read-line eof-object?)))
 

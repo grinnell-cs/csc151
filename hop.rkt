@@ -8,20 +8,8 @@
 ;;;   Samuel A. Rebelsky
 ;;;   Peter-Michael Osera
 
-(provide
-  (contract-out
-    [all (-> procedure? list? boolean?)]
-    [any (-> procedure? list? boolean?)]
-    [comparator (-> procedure? procedure? procedure?)]
-    [left-section (-> procedure? any/c procedure?)]
-    [l-s (-> procedure? any/c procedure?)]
-    [right-section (-> procedure? any/c procedure?)]
-    [r-s (-> procedure? any/c procedure?)]
-    [tally-value (-> list? any/c integer?)]
-    ))
-(provide o)
-(provide section)
-(provide :>)
+(require scribble/srcdoc
+         (for-doc racket/base scribble/manual))
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -42,11 +30,15 @@
 ;;;   If there is an i such that (pred? (list-ref lst i))
 ;;;     fails to hold, then ok? is false.
 ;;;   Otherwise, ok? is true.
+(provide
+  (proc-doc/names
+    all (procedure? list? . -> . boolean?) (pred lst)
+    ("Determines if " (racket pred) " holds for all values in " (racket lst) ".")))
 (define all
-  (lambda (pred? lst)
+  (lambda (pred lst)
     (or (null? lst)
-        (and (pred? (car lst))
-             (all pred? (cdr lst))))))
+        (and (pred (car lst))
+             (all pred (cdr lst))))))
 
 ;;; Package:
 ;;;   csc151/hop
@@ -66,11 +58,15 @@
 ;;;     ok? is true.
 ;;;   If for all i, (pred? (list-ref list i)) does not hold, then
 ;;;     ok? is false.
+(provide
+  (proc-doc/names
+    any (procedure? list? . -> . boolean?) (pred lst)
+    ("Determines if " (racket pred) " holds for any of the values in " (racket lst) ".")))
 (define any
-  (lambda (pred? lst)
+  (lambda (pred lst)
     (and (not (null? lst))
-         (or (pred? (car lst))
-             (any pred? (cdr lst))))))
+         (or (pred (car lst))
+             (any pred (cdr lst))))))
 
 ;;; Package:
 ;;;   csc151/hop
@@ -88,10 +84,15 @@
 ;;;   compare? can be applied to the results of extract.
 ;;; Postconditions:
 ;;;   (comp? v1 v2) = (compare? (extract v1) (extract v2))
+(provide
+  (proc-doc/names
+    comparator (procedure? procedure? . -> . (any/c any/c . -> . boolean?)) (compare extract)
+    ("Creates a comparator that takes two values, applies " (racket extract)
+     "to each, and then compares the results of both using " (racket compare) ".")))
 (define comparator
-  (lambda (compare? extract)
+  (lambda (compare extract)
     (lambda (v1 v2)
-      (compare? (extract v1) (extract v2)))))
+      (compare (extract v1) (extract v2)))))
 
 ;;; Package:
 ;;;   csc151/hop
@@ -109,6 +110,10 @@
 ;;;   left is a valid first parameter for proc2.
 ;;; Postconditions:
 ;;;   (proc1 right) = (proc2 left right)
+(provide
+  (proc-doc/names
+    left-section (procedure? any/c . -> . (any/c . -> . any/c)) (proc2 left)
+    ("Creates a one-parameter procedure by filling in the first parameter of " (racket proc2))))
 (define left-section
   (lambda (proc2 left)
     (lambda (right) (proc2 left right))))
@@ -129,6 +134,10 @@
 ;;;   left is a valid first parameter for proc2.
 ;;; Postconditions:
 ;;;   (proc1 right) = (proc2 left right)
+(provide
+  (thing-doc
+    l-s (procedure? any/c . -> . (any/c . -> . any/c))
+    ("An alias for " (racket left-section))))
 (define l-s left-section)
 
 ;;; Package:
@@ -149,6 +158,10 @@
 ;;;   function.
 ;;; Postconditions:
 ;;;   (fun x) = (fun1 (fun2 (.... (funn x)...)))
+(provide
+  (thing-doc
+    o procedure?
+    ("An alias for " (racket compose))))
 (define o
   (lambda funs
     (lambda (x)
@@ -174,6 +187,10 @@
 ;;;   left is a valid first parameter for proc2.
 ;;; Postconditions:
 ;;;   (proc1 left) = (proc2 left right)
+(provide
+  (proc-doc/names
+    right-section (procedure? any/c . -> . (any/c . -> . any/c)) (proc2 right)
+    ("Creates a one-parameter procedure by filling in the second parameter of " (racket proc2))))
 (define right-section
   (lambda (proc2 right)
     (lambda (left) (proc2 left right))))
@@ -194,6 +211,10 @@
 ;;;   left is a valid first parameter for proc2.
 ;;; Postconditions:
 ;;;   (proc1 left) = (proc2 left right)
+(provide
+  (thing-doc
+    r-s (procedure? any/c . -> . (any/c . -> . any/c))
+    ("An alias for " (racket right-section))))
 (define r-s right-section)
 
 ;;; Package:
@@ -211,13 +232,44 @@
 ;;;   [No additional preconditions]
 ;;; Postconditions:
 ;;;   (<= 0 result (length l))
+(provide
+  (proc-doc/names
+    tally-value (list? any/c . -> . integer?) (lst value)
+    ("Returns the number of occurrences of " (racket value) " in " (racket lst) ".")))
 (define tally-value
-  (lambda (l v)
+  (lambda (lst value)
     (foldl (lambda (x acc)
-             (if (equal? x v)
+             (if (equal? x value)
                  (+ 1 acc)
                  acc))
-           0 l)))
+           0 lst)))
+
+;;; Package:
+;;;   csc151/hop
+;;; Procedure:
+;;;   :>
+;;; Parameters:
+;;;   x, a value of type T
+;;;   fs, a list of functions
+;;; Purpose:
+;;;   The pipeline operator.  Chains invocations of functions found
+;;;   in fs in a left-to-right fashion starting with the value x.
+;;; Produces:
+;;;   result, a value
+;;; Preconditions:
+;;;   The first element of fs is a function of type T -> U1.
+;;;   The ith element of fs is a function of type T(i-1) -> Ti.
+;;; Postconditions:
+;;;   result has type Tk where Tk is the output type of the final
+;;;   function of fs.
+(provide
+  (proc-doc/names
+    :> (-> any/c procedure? ... any/c) (x f fs)
+    ("The pipeline operator.  Chains invocations of functions " (racket f)
+     " and " (racket fs) " in a left-to-right fashion starting with the value " (racket x))))
+(define :>
+  (lambda (x . fs)
+    (foldl (lambda (g acc) (g acc)) x fs)))
 
 ; +-----------------+------------------------------------------------
 ; | Exported macros |
@@ -245,6 +297,7 @@
 ;;;   (newproc val1 ... valk) = (proc ...)
 ;;;     where the ith parameter to proc is either param-i, if param-i
 ;;;       is not <>, and the next element of val1...valk otherwise.
+(provide section)
 (define-syntax section
   (lambda (stx)
     (let ([info (syntax->datum stx)])
@@ -275,25 +328,3 @@
                 (kernel (cdr params)
                         formals
                         (cons (car params) actuals))])))]))))
-
-;;; Package:
-;;;   csc151/hop
-;;; Procedure:
-;;;   :>
-;;; Parameters:
-;;;   x, a value of type T
-;;;   fs, a list of functions
-;;; Purpose:
-;;;   The pipeline operator.  Chains invocations of functions found
-;;;   in fs in a left-to-right fashion starting with the value x.
-;;; Produces:
-;;;   result, a value
-;;; Preconditions:
-;;;   The first element of fs is a function of type T -> U1.
-;;;   The ith element of fs is a function of type T(i-1) -> Ti.
-;;; Postconditions:
-;;;   result has type Tk where Tk is the output type of the final
-;;;   function of fs.
-(define :>
-  (lambda (x . fs)
-    (foldl (lambda (g acc) (g acc)) x fs)))
