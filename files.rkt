@@ -12,6 +12,8 @@
   [file->chars (-> string? (listof char?))]
   [file->lines (-> string? (listof string?))]
   [file->words (-> string? (listof string?))]
+  [lines->file (-> (listof string?) string? void?)]
+  [string->file (-> string? string? void?)]
   [read-word (-> input-port? string?)]
   [skip-char (-> input-port? char? boolean?)]
   [read-until (-> input-port? (or/c procedure? char? string?) string?)]))
@@ -75,6 +77,51 @@
 (define file->words
   (lambda (fname)
     (file->stuff fname read-word (lambda (stuff) (equal? stuff "")))))
+
+;;; Package:
+;;;   csc151/files
+;;; Procedure:
+;;;   lines->file
+;;; Parameter:
+;;;   lines, a list of strings
+;;;   fname, a string
+;;; Purpose:
+;;;   Saves the given lines to the named file.
+;;; Preconditions:
+;;;   The fname must name a writeable file.
+;;; Postconditions:
+;;;   The given file now contains all the entries in lines.
+(define lines->file
+  (lambda (lines fname)
+    (let ([port (open-output-file fname #:exists 'replace)])
+      (for-each (lambda (line) (display line port) (newline port))
+                lines)
+      (close-output-port port))))
+
+;;; Package:
+;;;   csc151/files
+;;; Procedure:
+;;;   string->file
+;;; Parameters:
+;;;   str, a string
+;;;   fname, a string
+;;; Purpose:
+;;;   Save the given string to the named file.
+;;; Produces:
+;;;   [Nothing; called for the side effect.]
+;;; Preconditions:
+;;;   The fname must name a writeable file.
+;;; Postconditions:
+;;;   The named file now contains str.
+;;; Precautions:
+;;;   Can clobber files.  Be careful.
+;;; Problems:
+;;;   May add an extra newline.
+(define string->file
+  (lambda (str fname)
+    (let ([port (open-output-file fname #:exists 'replace)])
+      (display str port)
+      (close-output-port port))))
 
 ;;; Package:
 ;;;   csc151/files
