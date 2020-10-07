@@ -14,7 +14,8 @@
     [log-value (-> any/c any)]
     [member? (-> any/c (listof any/c) boolean?)]
     [writeln (-> any/c any)]
-    [show-call (->* (symbol?) () #:rest (listof any/c) any)]))
+    [show-call (->* (symbol?) () #:rest (listof any/c) any)]
+    [nat? (-> any/c boolean?)]))
 
 (provide ??)
 
@@ -139,6 +140,8 @@
               params)
     (display ")")
     (newline)))
+
+(define nat? exact-nonnegative-integer?)
 
 ;;; Package:
 ;;;   csc151/misc
