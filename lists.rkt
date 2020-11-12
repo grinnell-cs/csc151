@@ -14,6 +14,7 @@
     [reduce (-> (-> any/c any/c any) list? any/c)]
     [reduce-left (-> (-> any/c any/c any) list? any/c)]
     [reduce-right (-> (-> any/c any/c any) list? any/c)]
+    [tally (-> (-> any/c boolean?) list? integer?)]
     [tally-all (-> list? list?)]
     [take-random (-> list? integer? list?)]
     ))
@@ -166,6 +167,32 @@
        (car lst)]
       [else
        (fun (car lst) (reduce-right fun (cdr lst)))])))
+
+;;; Procedure:
+;;;   tally
+;;; Parameters:
+;;;   pred?, a unary predicate
+;;;   lst, a list
+;;; Purpose:
+;;;   Count the number of values in lst for which pred? holds.
+;;; Produces:
+;;;   count, a non-negative integer
+;;; Preconditions:
+;;;   pred? can be applied to all elements of lst.
+;;; Postconditions:
+;;;   count represents the number of values in lst for which
+;;;   (pred? val) holds.
+(define tally
+  (lambda (pred? lst)
+    (let kernel ([remaining lst]
+                 [count 0])
+      (cond
+        [(null? remaining)
+         count]
+        [(pred? (car remaining))
+         (kernel (cdr remaining) (+ 1 count))]
+        [else
+         (kernel (cdr remaining) count)]))))
 
 ;;; Procedure:
 ;;;   tally-all
