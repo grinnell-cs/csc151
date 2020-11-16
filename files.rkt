@@ -14,6 +14,7 @@
   [file->words (-> string? (listof string?))]
   [lines->file (-> (listof string?) string? void?)]
   [string->file (-> string? string? void?)]
+  [read-line-alt (-> input-port? string?)]
   [read-word (-> input-port? string?)]
   [skip-char (-> input-port? char? boolean?)]
   [read-until (-> input-port? (or/c procedure? char? string?) string?)]))
@@ -57,7 +58,7 @@
 ;;;   but without newlines.
 (define file->lines
   (lambda (fname)
-    (file->stuff fname read-line eof-object?)))
+    (file->stuff fname read-line-alt eof-object?)))
 
 ;;; Package:
 ;;;   csc151/files
@@ -126,6 +127,31 @@
 ;;; Package:
 ;;;   csc151/files
 ;;; Procedure:
+;;;   read-line-alt
+;;; Parameters:
+;;;   port, an input port
+;;; Purpose:
+;;;   Reads the next line from the port, chopping the trailing \n and \r.
+;;; Produces:
+;;;   line, a string
+;;; Preconditions:
+;;;   port is open for reading
+;;; Postconditions:
+;;;   line contains the former next line in port.
+;;;   port has been advanced.
+;;; Ponderings:
+;;;   read-line does not seem to remove the '\r' from Windows.  This 
+;;;   procedure attempts to do so.
+(define read-line-alt
+  (lambda (port)
+    (let ([line (read-line port)])
+      (if (string? line)
+          (string-replace line "\r" "")
+          line))))
+
+;;; Package:
+;;;   csc151/files
+;;; Procedure:
 ;;;   read-word
 ;;; Parameters:
 ;;;   port, an input port
@@ -160,7 +186,7 @@
 ;;;   terminator, a character, string, or predicate
 ;;; Purpose:
 ;;;   Read the characters until you reach terminator (or eof) (or
-;;;   the predicate holds..
+;;;   the predicate holds).
 ;;; Produces:
 ;;;   str, a string
 ;;; Preconditions:
@@ -168,10 +194,10 @@
 ;;; Postconditions:
 ;;;   * str represents the sequence of characters from the file pointer
 ;;;     of port at the beginning until (a) the first occurence of terminator,
-;;;     if terminator is a character, (b) a character that appears in terminator,
-;;;     it terminator is a string, or (c) a character for which terminator
-;;;     holds, if terminator is a predicate.  str does not include that
-;;;     character.
+;;;     if terminator is a character, (b) a character that appears in 
+;;;     terminator, it terminator is a string, or (c) a character for which 
+;;;     terminator holds, if terminator is a predicate.  
+;;;     Note that str does not include that character.
 ;;;   * the file pointer has been advanced appropriately.
 (define read-until
   (lambda (port terminator)
