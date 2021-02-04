@@ -18,6 +18,7 @@
     [nat? (-> any/c boolean?)]))
 
 (provide ??)
+(provide ???)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -160,3 +161,17 @@
 ;;;   [None]
 (define ??
   (lambda () (error "Hole encountered!  Fill me in!")))
+
+;;; Package:
+;;;   csc151/misc
+;;; Macro:
+;;;   ???
+;;; Purpose:
+;;;   Placeholder value that does not need parentheses.  Raises
+;;;   an error when evaluated.
+(define-syntax ???
+  (lambda (stx)
+    (syntax-case stx ()
+      [??? (identifier? (syntax ???))
+           ((lambda ()
+              (error "Missing code.  Please complete it.")))])))
