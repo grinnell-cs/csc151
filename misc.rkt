@@ -19,7 +19,6 @@
 
 (provide ??)
 (provide ???)
-(provide ????)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -176,10 +175,3 @@
       [??? (identifier? (syntax ???))
            ((lambda ()
               (error "Missing code.  Please complete it.")))])))
-
-(define-syntax ????
-  (lambda (stx)
-    (syntax-case stx ()
-      [???? (identifier? (syntax ????))
-            (??)])))
- 
