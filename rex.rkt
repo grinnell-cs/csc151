@@ -13,6 +13,7 @@
  rex->string
  
  rex-any-char
+ rex-any-of
  rex-char-antiset
  rex-char-range
  rex-char-set
