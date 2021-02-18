@@ -218,6 +218,11 @@ Todo
       (error type-name
              "Expects characters, received ~e and ~e"
              start finish))
+    (when (> (char->integer start) (char->integer finish))
+      (error type-name
+             "Invalid range: The collating sequence number for ~e (~v) is greater than the collating sequence number for ~e (~v)"
+             start (char->integer start)
+             finish (char->integer finish)))
     (values start finish)))
 
 ;;; (rex-any-char) : rex?
@@ -327,6 +332,11 @@ Todo
       (error type-name
              "Expects characters, received ~e and ~e"
              start finish))
+    (when (> (char->integer start) (char->integer finish))
+      (error type-name
+             "Invalid range: The collating sequence number for ~e (~v) is greater than the collating sequence number for ~e (~v)"
+             start (char->integer start)
+             finish (char->integer finish)))
     (values start finish)))
 
 ;;; (rex-char-set str) -> rex?
