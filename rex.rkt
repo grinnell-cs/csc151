@@ -19,6 +19,8 @@
  rex-char-set
  rex-empty
  rex-string
+ rex-start-of-string
+ rex-end-of-string
 
  rex-concat
  rex-repeat
@@ -427,6 +429,16 @@ Todo
      (lambda (rex n names)
        (list "" n names)))])
 
+;;; (rex-end-of-string) : rex?
+;;; Generate a regular expression that matches the end of a string
+(define-struct rex-empty ()
+  #:transparent
+  #:methods gen:rex
+  [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
+   (define _rex-compile
+     (lambda (rex n names)
+       (list "$" n names)))])
+
 ;;; (rex-repeat rex)
 ;;;   rex : rex?
 ;;; Generate a regular expression that matches 1 or more copies of rex.
@@ -465,6 +477,16 @@ Todo
              (let ([tmp (rex-compile subrex n names)])
                (cons (string-append (car tmp) "*")
                      (cdr tmp)))))))])
+
+;;; (rex-start-of-string) : rex?
+;;; Generate a regular expression that matches the start of a string.
+(define-struct rex-empty ()
+  #:transparent
+  #:methods gen:rex
+  [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
+   (define _rex-compile
+     (lambda (rex n names)
+       (list "^" n names)))])
 
 ;;; (rex-string str) -> rex?
 ;;;   str : string?
