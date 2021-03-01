@@ -431,7 +431,7 @@ Todo
 
 ;;; (rex-end-of-string) : rex?
 ;;; Generate a regular expression that matches the end of a string
-(define-struct rex-empty ()
+(define-struct rex-end-of-string ()
   #:transparent
   #:methods gen:rex
   [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
@@ -480,7 +480,7 @@ Todo
 
 ;;; (rex-start-of-string) : rex?
 ;;; Generate a regular expression that matches the start of a string.
-(define-struct rex-empty ()
+(define-struct rex-start-of-string ()
   #:transparent
   #:methods gen:rex
   [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
