@@ -11,6 +11,9 @@
 (require scribble/srcdoc
          (for-doc racket/base scribble/manual))
 
+(provide vector-andmap
+         vector-ormap)
+
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
 ; +---------------------+
@@ -270,6 +273,42 @@
 (define :>
   (lambda (x . fs)
     (foldl (lambda (g acc) (g acc)) x fs)))
+
+
+;;; (vector-andmap pred? vec) -> boolean?
+;;;   pred? : predicate
+;;;   vec : vector?
+;;; Runs pred? on each element of vec.  Stops at the first false.
+(define vector-andmap
+  (lambda (pred? vec)
+    (let ([len (vector-length vec)])
+      (if (zero? len)
+          #t
+          (letrec ([kernel
+                    (lambda (i)
+                      (let ([current (pred? (vector-ref vec i))])
+                        (if (= i (- len 1))
+                            current
+                            (and current (kernel (+ i 1))))))])
+            (kernel 0))))))
+
+;;; (vector-ormap pred? vec) -> boolean?
+;;;   pred? : predicate
+;;;   vec : vector?
+;;; Runs pred? on each element of vec.  Stops at the first truish
+;;; value.
+(define vector-ormap
+  (lambda (pred? vec)
+    (let ([len (vector-length vec)])
+      (if (zero? len)
+          #f
+          (letrec ([kernel
+                    (lambda (i)
+                      (let ([current (pred? (vector-ref vec i))])
+                        (if (= i (- len 1))
+                            current
+                            (or current (kernel (+ i 1))))))])
+            (kernel 0))))))
 
 ; +-----------------+------------------------------------------------
 ; | Exported macros |
