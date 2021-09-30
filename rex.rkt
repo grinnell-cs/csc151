@@ -42,6 +42,7 @@ Todo
 [x] Write reading.
 [ ] Add tests.
 [ ] Figure out how to deal with replacements.
+[ ] Deal with dashes
 |#
 
 ; +-----------+------------------------------------------------------
@@ -128,7 +129,7 @@ Todo
 ;;; Determine if rex matches all of str.
 (define rex-matches?
   (lambda (rex str)
-    (let [(re (pregexp (string-append "^" (rex->string rex) "$")))]
+    (let [(re (pregexp (string-append "^(" (rex->string rex) ")$")))]
       ; (fprintf (current-output-port) "rex-matches: ~v~n" re)
       (regexp-match? re str))))
 
