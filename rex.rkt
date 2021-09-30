@@ -307,7 +307,7 @@ Todo
   [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
    (define _rex-compile
      (lambda (rex n names)
-       (list (string-append "[^" (regexp-quote (rex-char-antiset-str rex)) "]")
+       (list (string-append "[^" (string-replace (regexp-quote (rex-char-antiset-str rex)) "-" "\\-") "]")
              n
              names)))])
 
@@ -351,7 +351,7 @@ Todo
   [(define _rex-prio (lambda (rex) PRIORITY-ATOM))
    (define _rex-compile
      (lambda (rex n names)
-       (list (string-append "[" (regexp-quote (rex-char-set-str rex)) "]")
+       (list (string-append "[" (string-replace (regexp-quote (rex-char-set-str rex)) "-" "\\-") "]")
              n
              names)))]
   #:guard
