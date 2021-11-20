@@ -1,7 +1,7 @@
 #lang racket
 
 ;;; File:
-;;;   binary-trees-list.rkt
+;;;   binary-trees-from-lists.rkt
 ;;; Summary:
 ;;;   Binary trees implemented as lists.
 ;;; Author:
@@ -39,8 +39,8 @@
 (define leaf?
   (lambda (t)
     (and (binary-tree-node? t)
-         (empty-tree? (btl t))
-         (empty-tree? (btr t)))))
+         (empty-tree? (bt/l t))
+         (empty-tree? (bt/r t)))))
 
 ;;; empty-tree : tree?
 ;;; An alias for the empty binary tree.
@@ -60,7 +60,7 @@
 ;;;   left : tree?
 ;;;   right : tree?
 ;;; Returns a non-empty tree with value at the root
-;;; and the given left and right subtrees.
+;;; and the given left and right subt/rees.
 (define binary-tree list)
 
 ;;; (leaf value) -> tree?
@@ -86,10 +86,10 @@
 (define binary-tree-right caddr)
 
 ;;; Shorthands
-(define btn binary-tree) ; n for "new" or "node"
-(define btt binary-tree-top)
-(define btl binary-tree-left)
-(define btr binary-tree-right)
+(define bt binary-tree) ; n for "new" or "node"
+(define bt/t binary-tree-top)
+(define bt/l binary-tree-left)
+(define bt/r binary-tree-right)
 
 ;;; (display-binary-tree t) -> void?
 ;;;   t : tree?
@@ -120,10 +120,10 @@
                   (when (not (empty-tree? t))
                     (display (make-string (* indent 2) #\space))
                     (display (bullet indent))
-                    (display (btt t))
+                    (display (bt/t t))
                     (newline)
-                    (helper (btl t) (+ indent 1))
-                    (helper (btr t) (+ indent 1))))])
+                    (helper (bt/l t) (+ indent 1))
+                    (helper (bt/r t) (+ indent 1))))])
         (helper t 0)))))
 
 ;;; (bt-traverse path tree) -> binary-tree?
@@ -157,9 +157,9 @@
                      (if (<= ub lb)
                          empty-tree
                          (let [(mid (quotient (+ lb ub) 2))]
-                           (btn (vector-ref vec mid)
-                                (helper vec lb mid)
-                                (helper vec (+ 1 mid) ub)))))])
+                           (bt (vector-ref vec mid)
+                               (helper vec lb mid)
+                               (helper vec (+ 1 mid) ub)))))])
     (lambda (vec)
       (helper vec 0 (vector-length vec)))))
 
@@ -183,11 +183,11 @@
 (define binary-tree-contains?
   (lambda (tree val)
     (and (not (empty-tree? tree))
-         (let ([root (btt tree)])
+         (let ([root (bt/t tree)])
            ; (display root) (newline)
            (or (equal? root val)
-               (binary-tree-contains? (btl tree) val)
-               (binary-tree-contains? (btr tree) val))))))
+               (binary-tree-contains? (bt/l tree) val)
+               (binary-tree-contains? (bt/r tree) val))))))
 
 ;;; (binary-tree-depth tree) -> integer?
 ;;;   tree : binary-tree?
@@ -196,8 +196,8 @@
   (lambda (tree)
     (if (empty-tree? tree)
         0
-        (+ 1 (max (binary-tree-depth (btl tree))
-                  (binary-tree-depth (btr tree)))))))
+        (+ 1 (max (binary-tree-depth (bt/l tree))
+                  (binary-tree-depth (bt/r tree)))))))
 
 ;;; (binary-tree-size tree) -> integer?
 ;;;   tree : binary-tree?
@@ -207,8 +207,8 @@
     (if (empty-tree? tree)
         0
         (+ 1
-           (binary-tree-size (btl tree))
-           (binary-tree-size (btr tree))))))
+           (binary-tree-size (bt/l tree))
+           (binary-tree-size (bt/r tree))))))
 
 ;;; (bst-find-string bst str) -> string
 ;;;   bst : binary-search-tree?
@@ -218,12 +218,12 @@
   (lambda (bst str)
     (if (empty-tree? bst)
         #f
-        (let ([root (btt bst)])
+        (let ([root (bt/t bst)])
           ; (display root) (newline)
           (cond
             [(string-ci=? str root)
              root]
             [(string-ci<? str root)
-             (bst-find-string (btl bst) str)]
+             (bst-find-string (bt/l bst) str)]
             [else
-             (bst-find-string (btr bst) str)])))))
+             (bst-find-string (bt/r bst) str)])))))
