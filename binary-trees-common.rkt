@@ -1,3 +1,6 @@
+;;; binary-trees-common.rkt
+;;; Common code for the various implementations of binary trees.
+;;; Samuel A. Rebelsky and the CSC-151 team.
 
 ; +--------+---------------------------------------------------------
 ; | Leaves |
