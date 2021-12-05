@@ -99,7 +99,7 @@
   ; to ub (exclusive)
   (letrec ([helper (lambda (vec lb ub)
                      (if (<= ub lb)
-                         empty-tree
+                         (empty-tree)
                          (let [(mid (quotient (+ lb ub) 2))]
                            (bt (vector-ref vec mid)
                                (helper vec lb mid)
@@ -114,7 +114,7 @@
 (define random-tree
   (lambda (n rproc)
     (if (zero? n)
-        empty-tree
+        (empty-tree)
         (let ([left-size (random n)])
           (binary-tree (rproc)
                        (random-tree left-size rproc)
