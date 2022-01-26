@@ -8,6 +8,8 @@
 ;;;   Samuel A. Rebelsky
 ;;;   Peter-Michael Osera
 
+(require racket/undefined)
+
 (provide
   (contract-out
     [log-addition (-> number? number? number?)]
@@ -17,8 +19,7 @@
     [show-call (->* (symbol?) () #:rest (listof any/c) any)]
     [nat? (-> any/c boolean?)]))
 
-(provide ??)
-(provide ???)
+(provide ?? ??? ?????)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -148,7 +149,7 @@
 ;;;   csc151/misc
 ;;; Procedure:
 ;;;   ??
-;;; Paramters:
+;;; Parameters:
 ;;;   [Nothing]
 ;;; Purpose:
 ;;;   Placeholder value for an expression.  Should be used as a zero-
@@ -164,14 +165,22 @@
 
 ;;; Package:
 ;;;   csc151/misc
-;;; Macro:
+;;; Value:
 ;;;   ???
+;;; Purpose:
+;;;   An alternative to undefine.
+(define ??? undefined)
+
+;;; Package:
+;;;   csc151/misc
+;;; Macro:
+;;;   ?????
 ;;; Purpose:
 ;;;   Placeholder value that does not need parentheses.  Raises
 ;;;   an error when evaluated.
-(define-syntax ???
+(define-syntax ?????
   (lambda (stx)
     (syntax-case stx ()
-      [??? (identifier? (syntax ???))
+      [??? (identifier? (syntax ?????))
            ((lambda ()
               (error "Missing code.  Please complete it.")))])))
