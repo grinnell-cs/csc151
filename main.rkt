@@ -14,6 +14,7 @@
 (require "numbers.rkt")
 (require "files.rkt")
 (require "csv.rkt")
+(require "colors.rkt")
 
 (provide
   (all-from-out "lists.rkt")
@@ -21,4 +22,5 @@
   (all-from-out "hop.rkt")
   (all-from-out "numbers.rkt")
   (all-from-out "files.rkt")
-  (all-from-out "csv.rkt"))
+  (all-from-out "csv.rkt")
+  (all-from-out "colors.rkt"))
