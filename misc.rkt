@@ -17,6 +17,7 @@
     [member? (-> any/c (listof any/c) boolean?)]
     [writeln (-> any/c any)]
     [show-call (->* (symbol?) () #:rest (listof any/c) any)]
+    [count-occurrences (-> string? string? integer?)]
     [nat? (-> any/c boolean?)]))
 
 (provide ?? ??? ?????)
@@ -184,3 +185,11 @@
       [??? (identifier? (syntax ?????))
            ((lambda ()
               (error "Missing code.  Please complete it.")))])))
+
+;;; (count-occurrences str text) -> integer?
+;;;   str : string?
+;;;   text : string?
+;;; Count how many times str appears in text
+(define count-occurrences
+  (lambda (str text)
+    (length (regexp-match* str text))))
