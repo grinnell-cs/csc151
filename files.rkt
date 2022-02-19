@@ -108,7 +108,7 @@
 (define file-to-words
   (lambda (fname)
     (report-read "file-to-lines" fname)
-    (file->lines fname)))
+    (file->words fname)))
 
 (define file-to-string
   (lambda (fname)
