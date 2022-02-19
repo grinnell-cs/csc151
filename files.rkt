@@ -9,6 +9,10 @@
 
 (provide
  (contract-out
+  [file-to-chars (-> string? (listof char?))]
+  [file-to-lines (-> string? (listof string?))]
+  [file-to-words (-> string? (listof string?))]
+  [file-to-string (-> string? string?)]
   [file->chars (-> string? (listof char?))]
   [file->lines (-> string? (listof string?))]
   [file->words (-> string? (listof string?))]
@@ -19,6 +23,18 @@
   [skip-char (-> input-port? char? boolean?)]
   [read-until (-> input-port? (or/c procedure? char? string?) string?)]))
 
+; +-----------------+------------------------------------------------
+; | Local Utilities |
+; +-----------------+
+
+;;; (report-read proc fname) -> void?
+;;;   proc : string?
+;;;   fname : string?
+;;; Printa a quick report of the read.
+(define report-read
+  (lambda (proc fname)
+    (printf "(~a \"~a\")\n" proc fname)))
+  
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
 ; +---------------------+
@@ -41,6 +57,11 @@
   (lambda (fname)
     (file->stuff fname read-char eof-object?)))
 
+(define file-to-chars
+  (lambda (fname)
+    (report-read "file-to-chars" fname)
+    (file->chars fname)))
+
 ;;; Package:
 ;;;   csc151/files
 ;;; Procedure:
@@ -60,6 +81,11 @@
   (lambda (fname)
     (file->stuff fname read-line-alt eof-object?)))
 
+(define file-to-lines
+  (lambda (fname)
+    (report-read "file-to-lines" fname)
+    (file->lines fname)))
+
 ;;; Package:
 ;;;   csc151/files
 ;;; Procedure:
@@ -78,6 +104,16 @@
 (define file->words
   (lambda (fname)
     (file->stuff fname read-word (lambda (stuff) (equal? stuff "")))))
+
+(define file-to-words
+  (lambda (fname)
+    (report-read "file-to-lines" fname)
+    (file->lines fname)))
+
+(define file-to-string
+  (lambda (fname)
+    (report-read "file-to-string" fname)
+    (file->string fname)))
 
 ;;; Package:
 ;;;   csc151/files
