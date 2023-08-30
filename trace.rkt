@@ -12,6 +12,7 @@
 ;;;   [TBD]
 
 (provide trace)
+(provide trace-core)
 (provide step)
 (provide current)
 (provide remaining-steps)
