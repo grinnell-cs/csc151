@@ -78,10 +78,10 @@
          (if (cdr tmp)
              (cons (cons 'if (cons (car tmp) (cddr lst))) true)
              (if (car tmp)
-                 (cons (caddr tmp) true)
-                 (cons (cadddr tmp) true))))]
+                 (cons (caddr lst) true)
+                 (cons (cadddr lst) true))))]
       [else
-       ; (display "Evaluating\n    ") (pp lst) (newline)
+       ; (display "Evaluating\n****") (pp lst) (newline)
        (let ([tmp (one-step-list lst)])
          (if (cdr tmp)
              tmp
