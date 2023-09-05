@@ -367,3 +367,42 @@
                 (kernel (cdr params)
                         formals
                         (cons (car params) actuals))])))]))))
+
+; This lets us write things like (>< (list 'a <> 'b)).  I'm not sure how I feel
+; about the syntax.  Would I prefer (>< '(list a <> b))?  It certainly feels
+; like a macro this way.  And we can call this "cut".
+(define-syntax ><
+  (lambda (stx)
+    (let ([info (syntax->datum stx)])
+      (cond
+        [(symbol? info)
+         (datum->syntax stx '(quote <macro:><>))]
+        [(null? (cdr info))
+         (error "><: Requires an expression")]
+        [(not (null? (cddr info)))
+         (error "><: Requires exactly one parameter (an expression)")]
+        [(not (list? (cadr info)))
+         (error "><: Requires an expression as its first parameter")]
+        [(null? (cadr info))
+         (error "><: Requires a non-empty expression as its first parameter")]
+        [else
+         (datum->syntax stx (cons 'section (cadr info)))]))))
+
+(provide cut)
+(define-syntax cut
+  (lambda (stx)
+    (let ([info (syntax->datum stx)])
+      (cond
+        [(symbol? info)
+         (datum->syntax stx '(quote <macro:cut>))]
+        [(null? (cdr info))
+         (error "cut: Requires an expression")]
+        [(not (null? (cddr info)))
+         (error "cut: Requires exactly one parameter (an expression)")]
+        [(not (list? (cadr info)))
+         (error "cut: Requires an expression as its first parameter")]
+        [(null? (cadr info))
+         (error "cut: Requires a non-empty expression as its first parameter")]
+        [else
+         (datum->syntax stx (cons 'section (cadr info)))]))))
+
