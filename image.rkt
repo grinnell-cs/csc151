@@ -13,8 +13,6 @@
 (provide image-map)
 (provide image-load)
 (provide image-save)
-(provide rgb)
-(provide rgba)
 
 ; +---------------------+--------------------------------------------
 ; | Exported procedures |
@@ -38,13 +36,3 @@
 (define image-save
   (lambda (img fname)
     (save-image img fname)))
-
-(define rgb
-  (let ([bound (lambda (x) (min 255 (max x 0)))])
-    (lambda (r g b)
-      (make-color (bound r) (bound g) (bound b)))))
-
-(define rgba
-  (let ([bound (lambda (x) (min 255 (max x 0)))])
-    (lambda (r g b a)
-      (make-color (bound r) (bound g) (bound b) (bound a)))))
