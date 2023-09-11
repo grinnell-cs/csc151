@@ -34,6 +34,27 @@
     (lambda (r g b a)
       (make-color (bound r) (bound g) (bound b) (bound a)))))
 
+;;; (all-color-names) -> list-of string?
+;;; Get a list of all the color names.
+(define all-color-names
+  (lambda ()
+    (send the-color-database get-names)))
+
+;;; (colors-find name) -> list-of string?
+;;;   name : string?
+;;; Extract all the colors that include "name".
+(define colors-find
+  (lambda (name)
+    (let kernel ([remaining (all-color-names)] [so-far null])
+      (cond
+        [(null? remaining)
+         (reverse so-far)]
+        [(regexp-match? name (car remaining))
+         (kernel (cdr remaining) (cons (car remaining) so-far))]
+        [else
+         (kernel (cdr remaining) so-far)]))))
+
+
 ;;; (color-name->rgb name) -> color? or false?
 ;;;    name : symbol? or string?
 ;;; Convert a color name to a color
