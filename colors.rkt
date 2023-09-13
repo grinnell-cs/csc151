@@ -34,6 +34,17 @@
     (lambda (r g b a)
       (make-color (bound r) (bound g) (bound b) (bound a)))))
 
+;;; (color-name? str) -> boolean?
+;;;   str : string?
+;;; Determine if str is a color name
+(define color-name?
+  (lambda (str)
+    (if (symbol? str)
+        (color-name? (symbol->string str))
+        (and (string? str)
+             (send the-color-database find-color str)
+             #t))))
+             
 ;;; (all-color-names) -> list-of string?
 ;;; Get a list of all the color names.
 (define all-color-names
