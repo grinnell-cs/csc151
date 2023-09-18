@@ -152,3 +152,40 @@
        (blue-component (send the-color-database find-color color))]
       [else
        #f])))
+
+;;; (hsv->rgb h s v) -> color?
+;;;   h : integer? [0..360]
+;;;   s : integer? [0..100]
+;;;   v : integer? [0..100] 
+;;; Convert an HSV color to an RGB color.
+;;; Formulae taken from https://www.rapidtables.com/convert/color/hsv-to-rgb.html
+(define hsv->rgb
+  (lambda (h s v)
+    (let* ([c (* s v 1/10000)]
+           [x (* c (- 1 (abs (- (mod2 (/ h 60)) 1))))]
+           [m (- (/ v 100) c)]
+           [cc (round (* 255 (+ c m)))]
+           [cx (round (* 255 (+ x m)))]
+           [c0 (round (* 255 m))])
+      (cond
+        [(< h 60)
+         (rgb cc cx c0)]
+        [(< h 120)
+         (rgb cx cc c0)]
+        [(< h 180)
+         (rgb c0 cc cx)]
+        [(< h 240)
+         (rgb c0 cx cc)]
+        [(< h 300)
+         (rgb cx 0 cc)]
+        [else
+         (rgb cc 0 cx)]))))
+
+;;; (mod2 x) -> real?
+;;;   x : real?
+;;; Like modulo, but for real numbers
+(define mod2
+  (lambda (x)
+    (if (< x 2)
+        x
+        (mod2 (- x 2)))))
