@@ -177,9 +177,9 @@
         [(< h 240)
          (rgb c0 cx cc)]
         [(< h 300)
-         (rgb cx 0 cc)]
+         (rgb cx c0 cc)]
         [else
-         (rgb cc 0 cx)]))))
+         (rgb cc c0 cx)]))))
 
 ;;; (mod2 x) -> real?
 ;;;   x : real?
