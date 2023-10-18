@@ -406,3 +406,10 @@
         [else
          (datum->syntax stx (cons 'section (cadr info)))]))))
 
+(define nested-list-of
+  (lambda (pred?)
+    (lambda (val)
+      (or (pred? val)
+          (and (list? val)
+               (andmap (nested-list-of pred?) val))))))
+
