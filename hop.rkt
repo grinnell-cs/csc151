@@ -406,6 +406,7 @@
         [else
          (datum->syntax stx (cons 'section (cadr info)))]))))
 
+(provide nested-list-of)
 (define nested-list-of
   (lambda (pred?)
     (lambda (val)
