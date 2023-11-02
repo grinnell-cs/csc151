@@ -6,7 +6,9 @@
          bitmap->image
          image->bitmap
          bitmap-pixel
-         bitmap-set-pixel!)
+         bitmap-set-pixel!
+         bitmap-width
+         bitmap-height)
 
 (define bitmap-force-image!
   (lambda (bitmap)
