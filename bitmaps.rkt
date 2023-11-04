@@ -41,6 +41,44 @@
       [else
        (print (bitmap-image bitmap) port mode)])))
 
+;;; (color-distance-squared c1 c2) -> integer?
+;;;    c1 : color?
+;;;    c2 : color?
+;;; Find the square of the color distance between c1 and c2.
+(define color-distance-squared
+  (lambda (c1 c2)
+    (+ (sqr (- (color-red c1) (color-red c2)))
+       (sqr (- (color-green c1) (color-green c2)))
+       (sqr (- (color-blue c1) (color-blue c2))))))
+
+;;; (color-distance c1 c2) -> real?
+;;;   c1 : color?
+;;;   c2 : color?
+;;; Find the color distance between c1 and c2.
+(define color-distance
+  (lambda (c1 c2)
+    (sqrt (color-distance-squared c1 c2))))
+
+;;; (bitmaps-similar? bm1 bm2 distance) -> boolean?
+;;;   bm1 : bitmap?
+;;;   bm2 : bitmap?
+;;;   distance : real?
+;;; Determine if bm1 and bm2 are similar (in that all pairs of
+;;; colors are within distance of each other).
+(define bitmaps-similar?
+  (lambda (bm1 bm2 distance)
+    (let ([distance-squared (* distance distance)]
+          [pixels1 (bitmap-pixels bm1)]
+          [pixels2 (bitmap-pixels bm2)])
+      (and (equal? (bitmap-width bm1) (bitmap-width bm2))
+           (equal? (bitmap-height bm1) (bitmap-height bm2))
+           (let kernel? ([pos (- (vector-length pixels1) 1)])
+             (or (< pos 0)
+                 (and (<= (color-distance-squared (vector-ref pixels1 pos)
+                                                  (vector-ref pixels2 pos))
+                          distance-squared)
+                      (kernel? (- pos 1)))))))))
+
 ; +---------+--------------------------------------------------------
 ; | Structs |
 ; +---------+
