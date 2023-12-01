@@ -35,7 +35,7 @@
     (or (empty-tree? t)
         (and (binary-tree-node? t)
              (binary-tree? (hash-ref t 'left))
-             (binary-tree? (hash-ref t 'rightt))))))
+             (binary-tree? (hash-ref t 'right))))))
 
 ;;; empty-tree : tree?
 ;;; An alias for the empty binary tree.
