@@ -61,7 +61,8 @@
     (let ([t (make-hash)])
       (hash-set! t 'value value)
       (hash-set! t 'left left)
-      (hash-set! t 'right right))))
+      (hash-set! t 'right right)
+      t)))
 
 ;;; (binary-tree-top t) -> any
 ;;;   t : tree?, (not (empty-tree? t))
