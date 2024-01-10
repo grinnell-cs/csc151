@@ -103,6 +103,19 @@
 ;;; Extract the alpha component of `color`.
 (define rgb-alpha rgba-alpha)
 
+;;; (rgb-distance color1 color2) -> integer?
+;;;   color1 : rgb?
+;;;   color2 : rgb?
+;;; Find the "distance" between color1 and color2.
+;;;
+;;; I might want to consider rewriting this to use HSV.
+(define rgb-distance
+  (lambda (color1 color2)
+    (+ (sqr (- (rgb-red color1) (rgb-red color2)))
+       (sqr (- (rgb-green color1) (rgb-green color2)))
+       (sqr (- (rgb-blue color1) (rgb-blue color2)))
+       (sqr (- (rgb-alpha color1) (rgb-alpha color2))))))
+
 ; +-------------+----------------------------------------------------
 ; | Color names |
 ; +-------------+
@@ -181,6 +194,23 @@
         (let ([tmp (send the-color-database find-color name)])
           (color->rgb tmp)))))
 
+;;; (rgb->color-name color) -> color-name?
+;;;   color : rgb?
+;;; Convert color to the name of the nearest named color.
+(define rgb->color-name
+  (lambda (color)
+    (let kernel ([name "white"]
+                 [distance (rgb-distance (rgb 255 255 255 255) color)]
+                 [remaining (all-color-names)])
+      (if (null? remaining)
+          name
+          (let* ([candidate (car remaining)]
+                 [candidate-distance (rgb-distance (color-name->rgb candidate)
+                                                   color)])
+            (if (< candidate-distance distance)
+                (kernel candidate candidate-distance (cdr remaining))
+                (kernel name distance (cdr remaining))))))))
+
 ;;; (2htdp->rgb color) -> rgb?
 ;;;    color : 2htdp:color
 ;;; Convert a color from the image/2htdp library to an RGB color.
@@ -242,6 +272,13 @@
          (rgb cx c0 cc)]
         [else
          (rgb cc c0 cx)]))))
+
+;;; (rgb->2htdp rgb) -> 2htdp:color?
+;;;   rgb : rgb?
+;;; Convert an RGB color to a 2htdp color.
+(define rgb->2htdp
+  (lambda (rgb)
+    (2htdp:color (rgb-red rgb) (rgb-green rgb) (rgb-blue rgb) (rgb-alpha rgb))))
 
 ; +------------------+-----------------------------------------------
 ; | Color components |
