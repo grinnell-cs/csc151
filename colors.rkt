@@ -1,6 +1,7 @@
 #lang racket
-(require 2htdp/image)
+(require (prefix-in 2htdp: 2htdp/image))
 (require (except-in racket/draw make-color make-pen))
+(require "type-predicates.rkt")
 
 ;;; File:
 ;;;   colors.rkt
@@ -11,28 +12,100 @@
 
 (provide (all-defined-out))
 
-;;; (rgb r g b) -> color?
-;;;   r : integer?
-;;;   g : integer?
-;;;   b : integer?
-;;; Create a new RGB color.  Values outside of bounds are capped
-;;; appropriately.
-(define rgb
-  (let ([bound (lambda (x) (min 255 (max x 0)))])
-    (lambda (r g b)
-      (make-color (bound r) (bound g) (bound b)))))
+; +---------------+--------------------------------------------------
+; | RGB(A) colors |
+; +---------------+
 
-;;; (rgba r g b a) -> color?
-;;;   r : integer?
-;;;   g : integer?
-;;;   b : integer?
-;;;   a : integer?
-;;; Create a new RGBA color.  Values outside of bounds are capped
-;;; appropriately.
-(define rgba
-  (let ([bound (lambda (x) (min 255 (max x 0)))])
-    (lambda (r g b a)
-      (make-color (bound r) (bound g) (bound b) (bound a)))))
+;;; (rgba-component? val) -> boolean?
+;;;   val : real?
+;;; Determines if val is an RGBA component (an exact integer between
+;;; 0 and 255, inclusive).
+(define rgba-component?
+  (lambda (val)
+    (and (integer? val)
+         (exact? val)
+         (<= 0 val 255))))
+
+;;; (->rgba-component val) -> (or/c rgba-component? false?)
+;;;   val : any/c
+;;; Convert anything to an RGBA component (an exact integer between
+;;; 0 and 255, inclusive). Returns false (`#f`) if it can't be converted.
+(define ->rgba-component
+  (lambda (val)
+    (cond
+      [(not (real? val))
+       #f]
+      [else
+       (max 0 (min 255 (inexact->exact (round val))))])))
+
+;;; (rgba r g b a) -> rgba?
+;;;   r : rgba-component? 
+;;;   g : rgba-component?
+;;;   b : rgba-component?
+;;;   a : rgba-component?
+;;; Create an RGBA color.
+;;;
+;;; Placeholder documentation for the struct.
+(struct rgba (red green blue alpha) 
+  #:transparent
+  #:reflection-name 'rgb
+  #:guard
+  (lambda (red green blue alpha type-name)
+    (let ([r (->rgba-component red)]
+          [g (->rgba-component green)]
+          [b (->rgba-component blue)]
+          [a (->rgba-component alpha)])
+      (cond
+        [(not r)
+         (error 'rgba-component "Invalid red component ~e" red)]
+        [(not g)
+         (error 'rgba-component "Invalid green component ~e" green)]
+        [(not b)
+         (error 'rgba-component "Invalid blue component ~e" blue)]
+        [(not a)
+         (error 'rgba-component "Invalid alpha component ~e" alpha)]
+        [else
+         (values r g b a)]))))
+
+;;; (rgb r g b) -> color?
+;;;   r : real?
+;;;   g : real?
+;;;   b : real?
+;;;   a : real? (optional)
+;;; Create a new RGB color.  Values outside of the 0 ... 255 bounds 
+;;; are capped appropriately.
+(define rgb
+  (lambda (r g b [a 255])
+    (rgba r g b a)))
+
+;;; (rgb? val) -> boolean?
+;;;   val : any/c
+;;; Determine if `val` is an RGB color.
+(define rgb? rgba?)
+
+;;; (rgb-red color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;;   color : rgba?
+;;; Extract the red component of `color`.
+(define rgb-red rgba-red)
+
+;;; (rgb-green color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;;   color : rgba?
+;;; Extract the green component of `color`.
+(define rgb-green rgba-green)
+
+;;; (rgb-blue color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;;   color : rgba?
+;;; Extract the blue component of `color`.
+(define rgb-blue rgba-blue)
+
+;;; (rgb-alpha color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;;   color : rgba?
+;;; Extract the alpha component of `color`.
+(define rgb-alpha rgba-alpha)
+
+; +-------------+----------------------------------------------------
+; | Color names |
+; +-------------+
 
 ;;; (color-name? str) -> boolean?
 ;;;   str : string?
@@ -65,10 +138,42 @@
         [else
          (kernel (cdr remaining) so-far)]))))
 
+; +------------+-----------------------------------------------------
+; | HSV colors |
+; +------------+
 
-;;; (color-name->rgb name) -> color? or false?
-;;;    name : symbol? or string?
-;;; Convert a color name to a color
+; These are not yet implemented.
+
+;;; (hsv? val) -> boolean?
+;;;   val : any?
+;;; Determine if `val` is an HSV color.
+(define hsv?
+  (lambda (val)
+    false))
+
+; +------------------+-----------------------------------------------
+; | Other predicates |
+; +------------------+
+
+;;; (color? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` can be treated as a color.
+(define color?
+  (lambda (val)
+    (or (rgb? val)
+        (color-name? val)
+        (hsv? val)
+        ((is-a?/c color%) val)
+        (2htdp:color? val))))
+
+; +------------------+-----------------------------------------------
+; | Color conversion |
+; +------------------+
+
+;;; (color-name->rgb name) -> (or/c color? false?)
+;;;    name : (or/c symbol? string?)
+;;; Convert a color name to a color. Returns false if the name cannot
+;;; be converted.
 (define color-name->rgb
   (lambda (name)
     (if (symbol? name)
@@ -76,80 +181,37 @@
         (let ([tmp (send the-color-database find-color name)])
           (color->rgb tmp)))))
 
-;;; (color->rgb color) -> color? or false
+;;; (2htdp->rgb color) -> rgb?
+;;;    color : 2htdp:color
+;;; Convert a color from the image/2htdp library to an RGB color.
+(define 2htdp->rgb
+  (lambda (color)
+    (rgb (2htdp:color-red color)
+         (2htdp:color-green color)
+         (2htdp:color-blue color)
+         (2htdp:color-alpha color))))
+
+;;; (color->rgb color) -> (or/c color? false?)
 ;;;   color : color? (one of the many forms)
 ;;; Convert one of the many forms of colors to an RGB color
 (define color->rgb
   (lambda (color)
     (cond
-      [((is-a?/c color%) color)
-       (make-color (send color red) (send color green) (send color blue))]
-      [(not (image-color? color))
+      [(false? color)
        #f]
-      [(color? color)
+      [((is-a?/c color%) color)
+       (rgba (send color red) (send color green) (send color blue) 
+             (inexact->exact (round (* 255 (send color alpha)))))]
+      [(rgb? color)
+       color]
+      [(2htdp:color? color)
        color]
       [(symbol? color)
        (color-name->rgb color)]
       [(string? color)
        (color-name->rgb color)]
-      [else
-       #f])))
-
-
-;;; (red-component color) -> integer? or boolean?
-;;;   color : image-color?
-;;; Get the red component of a color.  Returns #f if it's not a color.
-(define red-component
-  (lambda (color)
-    (cond
-      [((is-a?/c color%) color)
-       (send color red)]
-      [(not (image-color? color))
-       #f]
-      [(color? color)
-       (color-red color)]
-      [(symbol? color)
-       (red-component (send the-color-database find-color (symbol->string color)))]
-      [(string? color)
-       (red-component (send the-color-database find-color color))]
-      [else
-       #f])))
-
-;;; (green-component color) -> integer? or boolean?
-;;;   color : image-color?
-;;; Get the green component of a color.  Returns #f if it's not a color.
-(define green-component
-  (lambda (color)
-    (cond
-      [((is-a?/c color%) color)
-       (send color green)]
-      [(not (image-color? color))
-       #f]
-      [(color? color)
-       (color-green color)]
-      [(symbol? color)
-       (green-component (send the-color-database find-color (symbol->string color)))]
-      [(string? color)
-       (green-component (send the-color-database find-color color))]
-      [else
-       #f])))
-
-;;; (blue-component color) -> integer? or boolean?
-;;;   color : image-color?
-;;; Get the blue component of a color.  Returns #f if it's not a color.
-(define blue-component
-  (lambda (color)
-    (cond
-      [((is-a?/c color%) color)
-       (send color blue)]
-      [(not (image-color? color))
-       #f]
-      [(color? color)
-       (color-blue color)]
-      [(symbol? color)
-       (blue-component (send the-color-database find-color (symbol->string color)))]
-      [(string? color)
-       (blue-component (send the-color-database find-color color))]
+      [(hsv? color)
+       (hsv->rgb color)]
       [else
        #f])))
 
@@ -181,11 +243,146 @@
         [else
          (rgb cc c0 cx)]))))
 
+; +------------------+-----------------------------------------------
+; | Color components |
+; +------------------+
+
+;;; (color-red color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the red component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+(define color-red
+  (lambda (color)
+    (cond
+      [(rgb? color)
+       (rgb-red color)]
+      [((is-a?/c color%) color)
+       (send color red)]
+      [(2htdp:color? color)
+       (2htdp:color-red color)]
+      [(symbol? color)
+       (color-red (send the-color-database find-color (symbol->string color)))]
+      [(string? color)
+       (color-red (send the-color-database find-color (string? color)))]
+      [(hsv? color)
+       (color-red (hsv->rgb color))]
+      [else
+       #f])))
+
+;;; (red-component color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the red component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+;;;
+;;; DEPRECATED. Replaced by `color-red`.
+(define red-component color-red)
+
+;;; (color-green color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the green component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+(define color-green
+  (lambda (color)
+    (cond
+      [(rgb? color)
+       (rgb-green color)]
+      [((is-a?/c color%) color)
+       (send color green)]
+      [(2htdp:color? color)
+       (2htdp:color-green color)]
+      [(symbol? color)
+       (color-green (send the-color-database find-color (symbol->string color)))]
+      [(string? color)
+       (color-green (send the-color-database find-color (string? color)))]
+      [(hsv? color)
+       (color-green (hsv->rgb color))]
+      [else
+       #f])))
+
+;;; (green-component color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the green component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+;;;
+;;; DEPRECATED. Replaced by `color-green`.
+(define green-component color-green)
+
+;;; (color-blue color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the blue component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+(define color-blue
+  (lambda (color)
+    (cond
+      [(rgb? color)
+       (rgb-blue color)]
+      [((is-a?/c color%) color)
+       (send color blue)]
+      [(2htdp:color? color)
+       (2htdp:color-blue color)]
+      [(symbol? color)
+       (color-blue (send the-color-database find-color (symbol->string color)))]
+      [(string? color)
+       (color-blue (send the-color-database find-color (string? color)))]
+      [(hsv? color)
+       (color-blue (hsv->rgb color))]
+      [else
+       #f])))
+
+;;; (blue-component color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the blue component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+;;;
+;;; DEPRECATED. Replaced by `color-blue`.
+(define blue-component color-blue)
+
+;;; (color-alpha color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the alpha component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+(define color-alpha
+  (lambda (color)
+    (cond
+      [(rgb? color)
+       (rgb-alpha color)]
+      [((is-a?/c color%) color)
+       (inexact->exact (round (* 255 (send color alpha))))]
+      [(2htdp:color? color)
+       (2htdp:color-alpha color)]
+      [(symbol? color)
+       (color-alpha (send the-color-database find-color (symbol->string color)))]
+      [(string? color)
+       (color-alpha (send the-color-database find-color (string? color)))]
+      [(hsv? color)
+       (color-alpha (hsv->rgb color))]
+      [else
+       #f])))
+
+;;; (alpha-component color) -> (any-of integer? false?)
+;;;   color : color?
+;;; Gets the alpha component of `color`. Returns `#f` if `color` is not 
+;;; one of the standard color types.
+;;;
+;;; DEPRECATED. Replaced by `color-alpha`.
+(define alpha-component color-alpha)
+
+; +--------------------------+---------------------------------------
+; | Miscellaneous Procedures |
+; +--------------------------+
+
 ;;; (mod2 x) -> real?
 ;;;   x : real?
-;;; Like modulo, but for real numbers
+;;; Like modulo base 2, but for real numbers.
+;;;
+;;; Used primarily for hsv->rgb.
 (define mod2
   (lambda (x)
-    (if (< x 2)
-        x
-        (mod2 (- x 2)))))
+    (cond 
+      [(< x 0)
+       (- 2 (mod2 (- x)))]
+      [(< x 2)
+       x]
+      [else
+       (mod2 (- x 2))])))
+
