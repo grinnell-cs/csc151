@@ -280,6 +280,24 @@
   (lambda (rgb)
     (2htdp:color (rgb-red rgb) (rgb-green rgb) (rgb-blue rgb) (rgb-alpha rgb))))
 
+;;; (color->2htdp color) -> 2htdp:color?
+;;;   color : color?
+;;; Convert a color to a 2htdp color.
+(define color->2htdp
+  (lambda (color)
+    (if (2htdp:color? color)
+        color
+        (rgb->2htdp (color->rgb color)))))
+
+;;; (color->color-name color) -> color-name?
+;;;   color : color?
+;;; Convert a color to a color name
+(define color->color-name
+  (lambda (color)
+    (if (color-name? color)
+        color
+        (rgb->color-name (color->rgb color)))))
+
 ; +------------------+-----------------------------------------------
 ; | Color components |
 ; +------------------+
@@ -423,3 +441,10 @@
       [else
        (mod2 (- x 2))])))
 
+;;; (color-equal? c1 c2) -> boolean?
+;;;   c1 : color?
+;;;   c2 : color?
+;;; Determine if `c1` and `c2` represent the same color.
+(define color-equal?
+  (lambda (c1 c2)
+    (equal? (color->rgb c1) (color->rgb c2))))
