@@ -91,7 +91,7 @@ Todo
 
 ;;; (rex-prio rex) -> integer?
 ;;;   rex : rex?
-;;; Determine the priority of rex.  See bove for details.
+;;; Determine the priority of rex.  See above for details.
 (define rex-prio
   (lambda (rex)
     (_rex-prio rex)))
