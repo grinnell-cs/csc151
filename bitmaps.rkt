@@ -125,9 +125,9 @@
       [(not (exact-integer? row))
        (error "bitmap-pixel: row must be an exact integer")]
       [(or (>= col (bitmap-width bitmap)) (< col 0))
-       (error "bitmap-pixel: Invalid column" col)]
+       (error 'bitmap-pixel "Invalid column ~a (should be between 0 and ~a)" col (bitmap-width bitmap))]
       [(or (>= row (bitmap-height bitmap)) (< row 0))
-       (error "bitmap-pixel: Invalid row" row)]
+       (error 'bitmap-pixel "Invalid row ~a (should be between 0 and ~a)" row (bitmap-height bitmap))]
       [else
        (vector-ref (bitmap-pixels bitmap)
                    (+ (* row (bitmap-width bitmap))
