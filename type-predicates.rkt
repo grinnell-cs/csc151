@@ -70,3 +70,15 @@
 ;;; Determines if val is a nonnegative real number.
 (define nonnegative-real?
   (all-of real? nonnegative?))
+
+;;; (one-of v1 ... vn) -> unary-predicate?
+;;;   v1 : any?
+;;;   ...
+;;;   vn : any?
+;;; Returns a predicate that returns true if its parameter is equal
+;;; to any of v1 through vn.
+(define one-of
+  (lambda vals
+    (lambda (val)
+      (and (member val vals) #t))))
+
