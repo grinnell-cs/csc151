@@ -15,7 +15,6 @@
 (require "cloneable.rkt")
 (require "bitmaps.rkt")
 (require "type-predicates.rkt")
-(require "hop.rkt")
 
 (provide (all-defined-out))
 
@@ -586,6 +585,48 @@
     (set-image-pict! img #f)
     (set-image-desc! img #f)
     img))
+
+;;; (image-left img) -> real?
+;;;   img : image?
+;;; Determine the x coordinate of the left edge of img. 
+;;;
+;;; This should always be 0.
+(define image-left
+  (lambda (img)
+    0))
+
+;;; (image-hcenter img) -> real?
+;;;   img : image?
+;;; Determine the x coordinate of the center of img.
+(define image-hcenter
+  (lambda (img)
+    (* 1/2 (image-width img))))
+
+;;; (image-right img) -> real?
+;;;   img : image?
+;;; Determine the x coordinate of the right edge of img
+(define image-right image-width)
+
+;;; (image-top img) -> real?
+;;;   img : image?
+;;; Determine the y coordinate of the top edge of img. 
+;;;
+;;; This should always be 0.
+(define image-top
+  (lambda (img)
+    0))
+
+;;; (image-vcenter img) -> real?
+;;;   img : image?
+;;; Determine the y coordinate of the center of img.
+(define image-vcenter
+  (lambda (img)
+    (* 1/2 (image-height img))))
+
+;;; (image-bottom img) -> real?
+;;;   img : image?
+;;; Determine the y coordinate of the bottom edge of img
+(define image-bottom image-width)
 
 ; +--------------+---------------------------------------------------
 ; | Basic images |
@@ -1876,12 +1917,31 @@
 
 (define combined? %combined?)
 
+;;; (halignment? val) -> boolean?
+;;;   val : any?
+;;; Determine if `val` is one of the legal horizontal alignments
+;;; ("left", "center', or "right").
+(define halignment?
+  (one-of "left" "center" "right"))
+
+;;; (valignment? val) -> boolean?
+;;;   val : any?
+;;; Determine if `val` is one of the legal vertical alignments
+;;; ("top", "center', or "bottom").
+(define valignment?
+  (one-of "top" "center" "bottom"))
+
+; +-------+----------------------------------------------------------
+; | Above |
+; +-------+
+
 (sstruct %above %combined (halignment)
          #:cloneable
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
-              (string-append "a stack of images ("
+              (string-append (format "a ~a-aligned stack of images ("
+                                     (%above-halignment img))
                              (let kernel ([remaining (subimages img)])
                                (if (null? (cdr remaining))
                                    (image-description (car remaining))
@@ -1903,6 +1963,11 @@
                           (map image-structure (subimages img))))))]
          #:done)
 
+;;; (above-halignment img) -> (one-of "left" "center" "right")
+;;;   img : above?
+;;; Determine the horizontal alignment of a stack of images.
+(define above-halignment %above-halignment)
+  
 ;;; (all-but-last lst) -> list?
 ;;;   lst : nonempty-list?
 ;;; Create a list with all the elements of lst but the last one.
@@ -1946,34 +2011,290 @@
 ;;;   i2 : image?
 ;;;   ...
 ;;;   in : image?
+;;;   description : string?
 ;;; Place the images above one another, aligned as described.
 ;;;
-;;; halignment is either "left", "center", "middle", or "right".
+;;; halignment is either "left", "center", or "right".
 (define above/align
   (lambda (halignment . images)
+    (when (not (halignment? halignment))
+      (error 'above/align "expects a horizontal alignment of \"left\", \"center\", or \"right\", received ~a" halignment))
     (when (null? images)
-      (error 'above "expects at least two images, received none"))
-    (let* ([tmp (last image)]
+      (error 'above/align "expects at least two images, received none"))
+    (let* ([tmp (last images)]
            [description (and (string? tmp) tmp)]
            [images (if description (all-but-last images) images)]
            [len (length images)])
       (when (< len 2)
-        (error 'above "expects at least two images, received ~a" len))
+        (error 'above/align "expects at least two images, received ~a" len))
       (let kernel ([remaining images])
         (when (not (null? remaining))
           (when (not (image? (car remaining)))
-            (error 'above "expects images, received ~a" (car remaining)))
+            (error 'above/align "expects images, received ~a" (car remaining)))
           (kernel (cdr remaining))))
       (%above description
               #f
               #f
               #f
               images
-              "center"))))
+              halignment))))
 
-(sstruct %overlay %combined (halignment valignment)
+; +--------+---------------------------------------------------------
+; | Beside |
+; +--------+
+
+(sstruct %beside %combined (valignment)
          #:cloneable
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (string-append (format "a ~a-aligned sequence of images ("
+                                     (%beside-valignment img))
+                             (let kernel ([remaining (subimages img)])
+                               (if (null? (cdr remaining))
+                                   (image-description (car remaining))
+                                   (string-append (image-description (car remaining))
+                                                  " beside "
+                                                  (kernel (cdr remaining)))))
+                             ")")))]
+         #:methods gen:img-make-pict
+         [(define image-make-pict
+            (lambda (img)
+              (apply 2htdp:beside/align
+                     (cons (%beside-valignment img)
+                           (map image-picture (subimages img))))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (cons 'beside/align
+                    (cons (%beside-valignment img)
+                          (map image-structure (subimages img))))))]
          #:done)
+
+;;; (beside-valignment img) -> valignment?
+;;;   img : beside?
+;;; Determine the vertical alignment of a sequence of images.
+(define beside-valignment %beside-valignment)
+  
+;;; (beside i1 i2 ... in [description]) -> image?
+;;;   i1 : image?
+;;;   i2 : image?
+;;;   ...
+;;;   in : image?
+;;; Place the images beside one another.
+(define beside
+  (lambda images
+    (when (null? images)
+      (error 'beside "expects at least two images, received none"))
+    (let* ([tmp (last images)]
+           [description (and (string? tmp) tmp)]
+           [images (if description (all-but-last images) images)]
+           [len (length images)])
+      (when (< len 2)
+        (error 'beside "expects at least two images, received ~a" len))
+      (let kernel ([remaining images])
+        (when (not (null? remaining))
+          (when (not (image? (car remaining)))
+            (error 'beside "expects images, received ~a" (car remaining)))
+          (kernel (cdr remaining))))
+      (%beside description
+               #f
+               #f
+               #f
+               images
+               "center"))))
+
+;;; (beside/align valignment i1 i2 ... in [description]) -> image?
+;;;   halignment : valignment?
+;;;   i1 : image?
+;;;   i2 : image?
+;;;   ...
+;;;   in : image?
+;;;   description : string?
+;;; Place the images above one another, aligned as described.
+;;;
+;;; valignment is either "top", "center", or "bottom".
+(define beside/align
+  (lambda (valignment . images)
+    (when (not (valignment? valignment))
+      (error 'beside/align "expects a vertical alignment of \"top\", \"center\", or \"bottom\", received ~a" valignment))
+    (when (null? images)
+      (error 'beside/align "expects at least two images, received none"))
+    (let* ([tmp (last images)]
+           [description (and (string? tmp) tmp)]
+           [images (if description (all-but-last images) images)]
+           [len (length images)])
+      (when (< len 2)
+        (error 'beside/align "expects at least two images, received ~a" len))
+      (let kernel ([remaining images])
+        (when (not (null? remaining))
+          (when (not (image? (car remaining)))
+            (error 'beside/align "expects images, received ~a" (car remaining)))
+          (kernel (cdr remaining))))
+      (%above description
+              #f
+              #f
+              #f
+              images
+              valignment))))
+
+; +---------+--------------------------------------------------------
+; | Overlay |
+; +---------+
+
+;;; (overlay-kernel images halignment valignment hoffset voffset) -> 2htdp:image?
+;;;   images : (list-of image?)
+;;;   halignment : (one-of "left" "center" "right")
+;;;   valignment : (one-of "top" "center" "bottom")
+;;;   hoffset : real?
+;;;   voffset : real?
+;;; Overlay a sequence of images according to the parameters.
+(define overlay-kernel
+  (lambda (images halignment valignment hoffset voffset)
+    ; First overlay on transparent boxes (ignoring the offset).
+    ; Then overlay with the offset.
+    (let* ([w (apply max (map image-width images))]
+           [h (apply max (map image-height images))]
+           [bg (transparent-rectangle w h)])
+      (let ([hfun (cond 
+                    [(equal? halignment "left")
+                     (lambda (img) 0)]
+                    [(equal? halignment "right")
+                     (lambda (img) (- (image-width img) w))]
+                    [else
+                     (lambda (img) (* 1/2 (- (image-width img) w)))])]
+            [vfun (cond 
+                    [(equal? valignment "top")
+                     (lambda (img) 0)]
+                    [(equal? valignment "bottom")
+                     (lambda (img) (- (image-height img) h))]
+                    [else
+                     (lambda (img) (* 1/2 (- (image-height img) h)))])])
+        (let ([intermediates
+               (map (lambda (img)
+                      (2htdp:overlay/xy (image-picture img)
+                                        (hfun img)
+                                        (vfun img)
+                                        bg))
+                    images)])
+          ; (display intermediates)
+          (let kernel ([remaining intermediates])
+            (if (null? (cdr remaining))
+                (car remaining)
+                (2htdp:overlay/xy (car remaining)
+                                  hoffset
+                                  voffset
+                                  (kernel (cdr remaining))))))))))
+
+
+(sstruct %overlay %combined (halignment valignment hoffset voffset)
+         #:cloneable
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (string-append (format "overlaid images, aligned ~a-~a ("
+                                     (overlay-halignment img)
+                                     (overlay-valignment img))
+                             (let kernel ([remaining (subimages img)])
+                               (if (null? (cdr remaining))
+                                   (image-description (car remaining))
+                                   (string-append (image-description (car remaining))
+                                                  " over "
+                                                  (kernel (cdr remaining)))))
+                             ")")))]
+         #:methods gen:img-make-pict
+         [(define image-make-pict
+            (lambda (img)
+              (overlay-kernel (subimages img)
+                              (overlay-halignment img)
+                              (overlay-valignment img)
+                              (overlay-hoffset img)
+                              (overlay-voffset img))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (cons 'above/align
+                    (cons (%above-halignment img)
+                          (map image-structure (subimages img))))))]
+         #:done)
+
+(define overlay-halignment %overlay-halignment)
+(define overlay-valignment %overlay-valignment)
+(define overlay-hoffset %overlay-hoffset)
+(define overlay-voffset %overlay-voffset)
+
+;;; (overlay img1 ... imgn [description]) -> image?
+;;;   img1 : image?
+;;;   img2 : image?
+;;;   ...
+;;;   imgn : image?
+;;;   description : string?
+;;; Overlay `img1` through `imgn` on top of each other, keeping them centered
+;;; on each other.
+(define overlay
+  (lambda images
+    (when (null? images)
+      (error 'overlay "expects at least two images, received none"))
+    (let* ([tmp (last images)]
+           [description (and (string? tmp) tmp)]
+           [images (if description (all-but-last images) images)]
+           [len (length images)])
+      (when (< len 2)
+        (error 'overlay "expects at least two images, received ~a" len))
+      (let kernel ([remaining images])
+        (when (not (null? remaining))
+          (when (not (image? (car remaining)))
+            (error 'above "expects images, received ~a" (car remaining)))
+          (kernel (cdr remaining))))
+      (%overlay description
+                #f
+                #f
+                #f
+                images
+                "center"
+                "center"
+                0
+                0))))
+
+;;; (overlay/align halignment valignment i1 i2 ... in [description]) -> image?
+;;;   halignment : horizontal-alignment?
+;;;   valignment : vertical-alignment?
+;;;   i1 : image?
+;;;   i2 : image?
+;;;   ...
+;;;   in : image?
+;;; Place the images above one another, aligned as described.
+;;;
+;;; halignment is either "left", "center", or "right".
+;;; valignment is either "top", "center", or "bottom".
+(define overlay/align
+  (lambda (halignment valignment . images)
+    (when (not (halignment? halignment))
+      (error 'overlay "expects a horizontal alignment of \"left\", \"center\", or \"right\", received ~a" halignment))
+    (when (not (valignment? valignment))
+      (error 'overlay "expects a vertical alignment of \"top\", \"center\", or \"bottom\", received ~a" valignment))
+    (when (null? images)
+      (error 'overlay/align "expects at least two images, received none"))
+    (let* ([tmp (last images)]
+           [description (and (string? tmp) tmp)]
+           [images (if description (all-but-last images) images)]
+           [len (length images)])
+      (when (< len 2)
+        (error 'overlay/align "expects at least two images, received ~a" len))
+      (let kernel ([remaining images])
+        (when (not (null? remaining))
+          (when (not (image? (car remaining)))
+            (error 'overlay/align "expects images, received ~a" (car remaining)))
+          (kernel (cdr remaining))))
+      (%overlay description
+              #f
+              #f
+              #f
+              images
+              halignment
+              valignment
+              0
+              0))))
 
 ; +------+-----------------------------------------------------------
 ; | Misc |
