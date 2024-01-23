@@ -1264,6 +1264,15 @@
 
 (sstruct %outlined-diamond %outlined-polygon (width height)
          #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-~ax~a-diamond.png"
+                      (or dir ".")
+                      (color->color-name (image-color img))
+                      (line-width img)
+                      (diamond-width img)
+                      (diamond-height img))))]
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
@@ -1291,7 +1300,8 @@
 ;;;   color : color?
 ;;;   line-width : positive-integer?
 ;;;   description : string?
-;;; A polygon whose vertices are given by `points` and whose color is `color`.
+;;; An outlined diamond whose inner size is width-by-height with
+;;; an outlined of `line-width`.
 (define outlined-diamond
   (lambda (width
            height
@@ -1369,6 +1379,10 @@
        (diamond-width (subimage d))]
       [else
        (error 'diamond-width "not a diamond ~a" d)])))
+
+; +-----------+------------------------------------------------------
+; | Triangles |
+; +-----------+
 
 ; +----------+-------------------------------------------------------
 ; | Ellipses |
