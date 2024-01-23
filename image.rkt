@@ -1238,6 +1238,16 @@
 (define solid-diamond-width  %solid-diamond-width)
 (define solid-diamond-height %solid-diamond-height)
 
+;;; (diamond-points width height) -> (list-of point?)
+;;;   width :positive-real?
+;;;   height : positive-real?
+;;; Determine the points for a width-by-height diamond.
+(define diamond-points
+  (lambda (width height)
+    (let* ([w (/ width 2)]
+           [h (/ height 2)])
+      (list (pt w 0) (pt width h) (pt w height) (pt 0 h)))))
+    
 ;;; (solid-diamond width height color [desc]) -> image?
 ;;;   width : nonnegative-real?
 ;;;   height : nonnegative-real?
@@ -1249,18 +1259,14 @@
            height
            color
            [description #f])
-    (let* ([color (color->rgb color)]
-           [w (/ width 2)]
-           [h (/ height 2)]
-           [points (list (pt w 0) (pt width h) (pt w height) (pt 0 h))])
-      (%solid-diamond description
-                      #f
-                      #f
-                      #f
-                      color
-                      points
-                      width
-                      height))))
+    (%solid-diamond description
+                    #f
+                    #f
+                    #f
+                    (color->rgb color)
+                    (diamond-points width height)
+                    width
+                    height)))
 
 (sstruct %outlined-diamond %outlined-polygon (width height)
          #:cloneable
@@ -1308,19 +1314,15 @@
            color
            line-width
            [description #f])
-    (let* ([color (color->rgb color)]
-           [w (/ width 2)]
-           [h (/ height 2)]
-           [points (list (pt w 0) (pt width h) (pt w height) (pt 0 h))])
-      (%outlined-diamond description
-                         #f
-                         #f
-                         #f
-                         color
-                         points
-                         line-width
-                         width
-                         height))))
+    (%outlined-diamond description
+                       #f
+                       #f
+                       #f
+                       (color->rgb color)
+                       (diamond-points width height)
+                       line-width
+                       width
+                       height)))
 
 ;;; (diamond-polygon? poly) -> boolean?
 ;;;   poly : polygon?
@@ -1383,6 +1385,171 @@
 ; +-----------+------------------------------------------------------
 ; | Triangles |
 ; +-----------+
+
+(sstruct %solid-isosceles-triangle %solid-polygon (width height)
+         #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/solid-~a-~ax~a-isosceles-triangle.png"
+                      (or dir ".")
+                      (color->color-name (image-color img))
+                      (isosceles-triangle-width img)
+                      (isosceles-triangle-height img))))]
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (format "a solid ~a ~a-by-~a isosceles triangle"
+                      (color->color-name (image-color img))
+                      (isosceles-triangle-width img)
+                      (isosceles-triangle-height img))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (list 'isosceles-triangle
+                    (isosceles-triangle-width img)
+                    (isosceles-triangle-height img)
+                    (image-color img))))]
+         #:done)
+
+(define solid-isosceles-triangle? %solid-isosceles-triangle?)
+(define solid-isosceles-triangle-width  %solid-isosceles-triangle-width)
+(define solid-isosceles-triangle-height %solid-isosceles-triangle-height)
+
+;;; (isosceles-triangle-points width height) -> (list-of pt?)
+;;;   width : positive-real?
+;;;   height : positive-real?
+;;; Compute the points in an isosceles triangle of the given
+;;; width and height.
+(define isosceles-triangle-points
+  (lambda (width height)
+    (list (pt 0 height) (pt (/ width 2) 0) (pt width height))))
+
+;;; (solid-isosceles-triangle width height color [desc]) -> image?
+;;;   width : positive-real?
+;;;   height : positive-real?
+;;;   color : color?
+;;;   description : string?
+;;; A solid isosceles triangle of the given width, height, and color.
+(define solid-isosceles-triangle
+  (lambda (width
+           height
+           color
+           [description #f])
+    (%solid-isosceles-triangle description
+                               #f
+                               #f
+                               #f
+                               (color->rgb color)
+                               (isosceles-triangle-points width height)
+                               width
+                               height)))
+
+(sstruct %outlined-isosceles-triangle %outlined-polygon (width height)
+         #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-~ax~a-isosceles-triangle.png"
+                      (or dir ".")
+                      (color->color-name (image-color img))
+                      (line-width img)
+                      (isosceles-triangle-width img)
+                      (isosceles-triangle-height img))))]
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (format "an outlined ~a ~a-by-~a isosceles-triangle"
+                      (color->color-name (image-color img))
+                      (isosceles-triangle-width img)
+                      (isosceles-triangle-height img))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (list 'outlined-isosceles-triangle
+                    (isosceles-triangle-width img)
+                    (isosceles-triangle-height img)
+                    (image-color img)
+                    (line-width img))))]
+         #:done)
+
+(define outlined-isosceles-triangle? %outlined-isosceles-triangle?)
+(define outlined-isosceles-triangle-width %outlined-isosceles-triangle-width)
+(define outlined-isosceles-triangle-height %outlined-isosceles-triangle-height)
+
+;;; (outlined-isosceles-triangle width height color line-width [desc]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   color : color?
+;;;   line-width : positive-integer?
+;;;   description : string?
+;;; An outlined isosceles-triangle whose inner size is width-by-height with
+;;; an outlined of `line-width`.
+(define outlined-isosceles-triangle
+  (lambda (width
+           height
+           color
+           line-width
+           [description #f])
+    (%outlined-isosceles-triangle description
+                                  #f
+                                  #f
+                                  #f
+                                  (color->rgb color)
+                                  (isosceles-triangle-points width height)
+                                  line-width
+                                  width
+                                  height)))
+
+;;; (isosceles-triangle-polygon? poly) -> boolean?
+;;;   poly : polygon?
+;;; Determine if poly is a isosceles-triangle.
+;;;
+;;; Not currently implemented.
+(define isosceles-triangle-polygon?
+  (lambda (poly)
+    #f))
+
+;;; (isosceles-triangle? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` is an isosceles-triangle.
+(define isosceles-triangle?
+  (lambda (img)
+    (or (solid-isosceles-triangle? img)
+        (outlined-isosceles-triangle? img)
+        (and (transformed? img)
+             (preserved? img)
+             (isosceles-triangle? (subimage img))))))
+
+;;; (isosceles-triangle-height d) -> real?
+;;;   tri : isosceles-triangle?
+;;; Determine the height of an isosceles-triangle
+(define isosceles-triangle-height
+  (lambda (tri)
+    (cond
+      [(solid-isosceles-triangle? tri)
+       (solid-isosceles-triangle-height tri)]
+      [(outlined-isosceles-triangle? tri)
+       (outlined-isosceles-triangle-height tri)]
+      [(and (transformed? tri) (preserved? tri))
+       (isosceles-triangle-height (subimage tri))]
+      [else
+       (error 'isosceles-triangle-height "not an isosceles-triangle ~a" tri)])))
+
+;;; (isosceles-triangle-width tri) -> real?
+;;;   tri : isosceles-triangle?
+;;; Determine the width of an isosceles-triangle
+(define isosceles-triangle-width
+  (lambda (tri)
+    (cond
+      [(solid-isosceles-triangle? tri)
+       (solid-isosceles-triangle-width tri)]
+      [(outlined-isosceles-triangle? tri)
+       (outlined-isosceles-triangle-width tri)]
+      [(and (transformed? tri) (preserved? tri))
+       (isosceles-triangle-width (subimage tri))]
+      [else
+       (error 'isosceles-triangle-width "not an isosceles-triangle ~a" tri)])))
 
 ; +----------+-------------------------------------------------------
 ; | Ellipses |
