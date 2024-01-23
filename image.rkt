@@ -239,17 +239,17 @@
     (+ (* (linear-slope line) x)
        (linear-y-intercept line))))
 
-;;; (line-between pt1 pt2) -> (or linear? false?)
+;;; (line-between pt1 pt2) -> (or linear? real?)
 ;;;   pt1 : point?
 ;;;   pt2 : point?
 ;;; Compute the function of the line between pt1 and pt2. Returns
-;;; #f for vertical lines.
+;;; the x intercept for vertical lines
 (define line-between
   (lambda (pt1 pt2)
     (let ([hoff (- (pt-x pt2) (pt-x pt1))]
           [voff (- (pt-y pt2) (pt-y pt1))])
       (if (zero? hoff)
-          #f
+          (pt-x pt1)
           (let* ([slope (/ voff hoff)]
                  [y-intercept (- (pt-y pt1) (* slope (pt-x pt1)))])
             (linear slope y-intercept))))))
@@ -262,6 +262,21 @@
 ;;; is distance.
 (define offset-line
   (lambda (line distance updown)
+    ; (println (list 'offset-line line distance updown))
+    (let* ([mult (if (equal? updown 'up) -1 1)]
+           [a (linear-slope line)]
+           [b (linear-y-intercept line)])
+      ; Note: Computation is going from ax + 0 to ax + c
+      (if (zero? a)
+          (linear a (+ b (* mult distance)))
+          (let* ([inverse (/ -1 a)]
+                 [x (/ distance (sqrt (+ 1 (sqr inverse))))]
+                 [c (* x (+ inverse (- a)))])
+            (linear a (+ b (* mult (abs c)))))))))
+
+(define offset-line-old
+  (lambda (line distance updown)
+    (println (list 'offset-line line distance updown))
     (let* ([mult (if (equal? updown 'up) -1 1)]
            [slope (linear-slope line)])
       (if (zero? slope)
@@ -296,6 +311,20 @@
                    (- (linear-slope line1) (linear-slope line2)))])
          (pt x (linear-apply line1 x)))])))
 
+;;; (intersections lines) -> (list-of pt?)
+;;;   lines : (list-of (any-of linear? real?))
+;;; Find the intersections between successive lines. If two lines are
+;;; parallel, skips that intersection.
+(define intersections
+  (lambda (lines)
+    (let kernel ([remaining (append lines (list (car lines)))])
+      (if (null? (cdr remaining))
+          null
+          (let ([point (intersection (car remaining) (cadr remaining))])
+            (if point
+                (cons point (kernel (cdr remaining)))
+                (kernel (cdr remaining))))))))
+
 ;;; (expanded-polygon-line pt1 pt2 distance) -> (any-of linear? real?)
 ;;;   pt1 : point?
 ;;;   pt2 : point?
@@ -322,25 +351,42 @@
 (define expand-polygon
   (lambda (points distance)
     (letrec ([lines (lambda (remaining)
-                      (if (null? (cdr remaining))
-                          (list (expanded-polygon-line (car remaining)
-                                                       (car points)
-                                                       distance))
+                      (cond
+                        [(null? (cdr remaining))
+                          null]
+                        [(equal? (car remaining) (cadr remaining))
+                         (lines (cdr remaining))]
+                        [else
                           (cons (expanded-polygon-line (car remaining)
                                                        (cadr remaining)
                                                        distance)
-                                (lines (cdr remaining)))))])
-      (let ([expanded-lines (lines points)])
-        (lastfirst (let kernel ([remaining expanded-lines])
-                     (if (null? (cdr remaining))
-                         (list (intersection (car remaining) (car expanded-lines)))
-                         (cons (intersection (car remaining) (cadr remaining))
-                               (kernel (cdr remaining))))))))))
+                                (lines (cdr remaining)))]))])
+      (let ([expanded-lines (lines (lastfirst points))])
+        (intersections (lastfirst expanded-lines))))))
 
+;;; (polygon-lines points) -> (list-of linear?)
+;;;   points : list-of point?
+;;; Determine the lines that bound a polygon
+(define polygon-lines
+  (lambda (points)
+    (let kernel ([remaining points])
+      (cond
+        [(null? (cdr remaining))
+         (if (equal? (car remaining) (car points))
+             null
+             (list (line-between (car remaining) (car points))))]
+        [(equal? (car remaining) (cadr remaining))
+         (kernel (cdr remaining))]
+        [else
+         (cons (line-between (car remaining) (cadr remaining))
+               (kernel (cdr remaining)))]))))
+
+;;; (lastfirst lst) -> list?
+;;;   lst : list?
+;;; Add the last element in `lst` to the front of the list.
 (define lastfirst
   (lambda (lst)
     (cons (last lst) lst)))
-
 
 ; +-------------+----------------------------------------------------
 ; | Backgrounds |
@@ -788,6 +834,13 @@
          #:cloneable
          #:mutable
          #:methods gen:outlined []
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (make-image-fname dir
+                                (format "outlined~a-~a-polygon-"
+                                        (color->color-name (image-color img))
+                                        (line-width img)))))]
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
@@ -798,16 +851,13 @@
          [(define image-make-pict
             (lambda (img)
               (let* ([lw (line-width img)]
-                     [tmp (2htdp:polygon (map pt->posn (polygon-points img))
-                                         "outline"
-                                         (2htdp:pen (color->2htdp (image-color img))
-                                                    lw
-                                                    "solid"
-                                                    "round"
-                                                    "miter"))])
-                (add-transparent-background tmp
-                                            (+ (2htdp:image-width tmp) lw)
-                                            (+ (2htdp:image-height tmp) lw)))))]
+                     [points (polygon-points img)]
+                     [newpoints (append (reverse (lastfirst (expand-polygon points lw)))
+                                        (lastfirst points))]
+                     [tmp (2htdp:polygon (map pt->posn newpoints)
+                                         "solid"
+                                         (color->2htdp (image-color img)))])
+                tmp)))]
          #:methods gen:img-make-stru
          [(define image-make-stru
             (lambda (img)
@@ -1092,6 +1142,14 @@
 
 (sstruct %outlined-square %outlined-rectangle ()
          #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-square-~a.png"
+                      (or dir ".")
+                      (line-width img)
+                      (color->color-name (image-color img))
+                      (square-side img))))]
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
@@ -1111,7 +1169,7 @@
 ;;;   color : color?
 ;;;   line-width : positive-real?
 ;;;   description : string?
-;;; Create a outlined square with the given side length and color.
+;;; Create an outlined square with the given side length and color.
 (define outlined-square
   (lambda (side color line-width [description #f])
     (let ([color (color->rgb color)]
@@ -1383,7 +1441,7 @@
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
-              (format "a outlined ~a ~a-by-~a ellipse"
+              (format "an outlined ~a ~a-by-~a ellipse"
                       (color->color-name (image-color img))
                       (ellipse-width img)
                       (ellipse-height img))))]
@@ -1530,6 +1588,14 @@
 
 (sstruct %outlined-circle %outlined-ellipse ()
          #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-circle-~a.png"
+                      (or dir ".")
+                      (line-width img)
+                      (color->color-name (image-color img))
+                      (circle-diameter img))))]
          #:methods gen:img-make-desc
          [(define image-make-desc
             (lambda (img)
@@ -1552,7 +1618,7 @@
 ;;;   color : color?
 ;;;   line-width : positive-integer?
 ;;;   description : string?
-;;; Create a outlined circle with the given diameter and color.
+;;; Create an outlined circle with the given diameter and color.
 (define outlined-circle
   (lambda (diam color line-width [description #f])
     (%outlined-circle description
@@ -2287,14 +2353,14 @@
             (error 'overlay/align "expects images, received ~a" (car remaining)))
           (kernel (cdr remaining))))
       (%overlay description
-              #f
-              #f
-              #f
-              images
-              halignment
-              valignment
-              0
-              0))))
+                #f
+                #f
+                #f
+                images
+                halignment
+                valignment
+                0
+                0))))
 
 ; +------+-----------------------------------------------------------
 ; | Misc |
