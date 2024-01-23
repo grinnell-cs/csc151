@@ -36,6 +36,14 @@
         (set! mdir (car dir)))
       mdir)))
 
+; +-----------+------------------------------------------------------
+; | Constants |
+; +-----------+
+
+;;; sqrt-3 : real?
+;;; The square root of three.
+(define sqrt-3 (sqrt 3))
+
 ; +-------------+----------------------------------------------------
 ; | Struct tags |
 ; +-------------+
@@ -198,7 +206,7 @@
     (sqrt (+ (sqr (- (pt-x pt1) (pt-x pt2)))
              (sqr (- (pt-y pt1) (pt-y pt2)))))))
 
-;;; (angle-between-points a b c) -> real?
+;;; (angle-between a b c) -> real?
 ;;;   a : pt?
 ;;;   b : pt?
 ;;;   c : pt?
@@ -1382,9 +1390,9 @@
       [else
        (error 'diamond-width "not a diamond ~a" d)])))
 
-; +-----------+------------------------------------------------------
-; | Triangles |
-; +-----------+
+; +---------------------+--------------------------------------------
+; | Isosceles triangles |
+; +---------------------+
 
 (sstruct %solid-isosceles-triangle %solid-polygon (width height)
          #:cloneable
@@ -1406,7 +1414,7 @@
          #:methods gen:img-make-stru
          [(define image-make-stru
             (lambda (img)
-              (list 'isosceles-triangle
+              (list 'solid-isosceles-triangle
                     (isosceles-triangle-width img)
                     (isosceles-triangle-height img)
                     (image-color img))))]
@@ -1550,6 +1558,139 @@
        (isosceles-triangle-width (subimage tri))]
       [else
        (error 'isosceles-triangle-width "not an isosceles-triangle ~a" tri)])))
+
+; +-----------------------+------------------------------------------
+; | Equilateral triangles |
+; +-----------------------+
+
+(sstruct %solid-equilateral-triangle %solid-isosceles-triangle ()
+         #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/solid-~a-~a-equilateral-triangle.png"
+                      (or dir ".")
+                      (color->color-name (image-color img))
+                      (equilateral-triangle-edge img))))]
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (format "a solid ~a equilateral triangle with edge length ~a"
+                      (color->color-name (image-color img))
+                      (equilateral-triangle-edge img))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (list 'solid-equilateral-triangle
+                    (equilateral-triangle-edge img)
+                    (image-color img))))]
+         #:done)
+
+;;; (solid-equilateral-triangle? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` is a solid equilateral triangle. 
+(define solid-equilateral-triangle? %solid-equilateral-triangle?)
+
+;;; (solid-equilateral-triangle edge color [desc]) -> image?
+;;;   edge: positive-real?
+;;;   color : color?
+;;;   description : string?
+;;; A solid equilateral triangle of the given edge length and color.
+(define solid-equilateral-triangle
+  (lambda (edge color [description #f])
+    (let ([width edge]
+          [height (* sqrt-3 1/2 edge)])
+      (%solid-equilateral-triangle description
+                                   #f
+                                   #f
+                                   #f
+                                   (color->rgb color)
+                                   (isosceles-triangle-points width height)
+                                   width
+                                   height))))
+
+(sstruct %outlined-equilateral-triangle %outlined-isosceles-triangle ()
+         #:cloneable
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-~a-equilateral-triangle.png"
+                      (or dir ".")
+                      (color->color-name (image-color img))
+                      (line-width img)
+                      (equilateral-triangle-edge img))))]
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (format "an outlined ~a equilateral-triangle with edge-length ~a"
+                      (color->color-name (image-color img))
+                      (equilateral-triangle-edge img))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (list 'outlined-equilateral-triangle
+                    (equilateral-triangle-edge img)
+                    (image-color img)
+                    (line-width img))))]
+         #:done)
+
+;;; (outlined-equilateral-triangle? val) -> boolean?
+;;;   val : any?
+;;; Determine if `val` is an equilateral triangle.
+(define outlined-equilateral-triangle? %outlined-equilateral-triangle?)
+
+;;; (outlined-equilateral-triangle width height color line-width [desc]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   color : color?
+;;;   line-width : positive-integer?
+;;;   description : string?
+;;; An outlined equilateral-triangle whose inner size is width-by-height with
+;;; an outlined of `line-width`.
+(define outlined-equilateral-triangle
+  (lambda (edge color line-width [description #f])
+    (let ([width edge]
+          [height (* sqrt-3 1/2 edge)])
+      (%outlined-equilateral-triangle description
+                                      #f
+                                      #f
+                                      #f
+                                      (color->rgb color)
+                                      (isosceles-triangle-points width height)
+                                      line-width
+                                      width
+                                      height))))
+
+;;; (equilateral-triangle-polygon? poly) -> boolean?
+;;;   poly : polygon?
+;;; Determine if poly is a equilateral-triangle.
+;;;
+;;; Not currently implemented.
+(define equilateral-triangle-polygon?
+  (lambda (poly)
+    #f))
+
+;;; (equilateral-triangle? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` is an equilateral-triangle.
+(define equilateral-triangle?
+  (lambda (img)
+    (or (solid-equilateral-triangle? img)
+        (outlined-equilateral-triangle? img)
+        (and (transformed? img)
+             (preserved? img)
+             (equilateral-triangle? (subimage img))))))
+
+;;; (equilateral-triangle-edge tri) -> real?
+;;;   tri : equilateral-triangle?
+;;; Determine the edge length of an equilateral-triangle
+(define equilateral-triangle-edge
+  (lambda (tri)
+    (when (not (equilateral-triangle? tri))
+      (error 'equilateral-triangle-edge 
+             "expects an equilateral triangle, received ~a"
+             tri))
+    (isosceles-triangle-width tri)))
 
 ; +----------+-------------------------------------------------------
 ; | Ellipses |
