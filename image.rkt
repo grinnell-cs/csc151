@@ -2782,12 +2782,12 @@
           (when (not (image? (car remaining)))
             (error 'beside/align "expects images, received ~a" (car remaining)))
           (kernel (cdr remaining))))
-      (%above description
-              #f
-              #f
-              #f
-              images
-              valignment))))
+      (%beside description
+               #f
+               #f
+               #f
+               images
+               valignment))))
 
 ; +---------+--------------------------------------------------------
 ; | Overlay |
