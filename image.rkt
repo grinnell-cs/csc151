@@ -361,14 +361,14 @@
     (letrec ([lines (lambda (remaining)
                       (cond
                         [(null? (cdr remaining))
-                          null]
+                         null]
                         [(equal? (car remaining) (cadr remaining))
                          (lines (cdr remaining))]
                         [else
-                          (cons (expanded-polygon-line (car remaining)
-                                                       (cadr remaining)
-                                                       distance)
-                                (lines (cdr remaining)))]))])
+                         (cons (expanded-polygon-line (car remaining)
+                                                      (cadr remaining)
+                                                      distance)
+                               (lines (cdr remaining)))]))])
       (let ([expanded-lines (lines (lastfirst points))])
         (intersections (lastfirst expanded-lines))))))
 
@@ -529,6 +529,14 @@
         (2htdp:overlay/offset img
                               hoff voff
                               (transparent-rectangle width height))))))
+
+; +------+-----------------------------------------------------------
+; | Pens |
+; +------+
+
+(define pen 2htdp:pen)
+(define pen-color 2htdp:pen-color)
+(define pen-width 2htdp:pen-width)
 
 ; +----------------+-------------------------------------------------
 ; | Generic images |
@@ -912,6 +920,40 @@
                          points
                          line-width))))
 
+;;; (polygon points mode color-or-pen [description]) -> image?
+;;;   points : (list-of pt?)
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described polygon.
+(define polygon
+  (lambda (points mode color-or-pen [description #f])
+    (cond
+      [(or (equal? mode "solid") (equal? mode 'solid))
+       (when (not (color? color-or-pen))
+         (error 'polygon "solid polygons need a color, received ~a"
+                color-or-pen))
+       (solid-polygon points color-or-pen)]
+      [(or (equal? mode "outline") (equal? mode 'outline))
+       (cond
+         [(color? color-or-pen)
+          (outlined-polygon points color-or-pen 1)]
+         [(2htdp:pen? color-or-pen)
+          (outlined-polygon points 
+                            (2htdp:pen-color color-or-pen)
+                            (2htdp:pen-width color-or-pen))]
+         [else
+          (error 'polygon "invalid color-or-pen: ~a" color-or-pen)])]
+      [(and (integer? mode) (<= 0 mode 255))
+       (when (not (color? color-or-pen))
+         (error 'polygon "solid polygons need a color, received ~a"
+                color-or-pen))
+       (let ([tmp (color->rgb color-or-pen)])
+         (solid-polygon points (rgb (rgb-red tmp)
+                                    (rgb-green tmp)
+                                    (rgb-blue tmp)
+                                    (round (* 1/255 mode (rgb-alpha tmp))))))])))
+          
 ; +------------+-----------------------------------------------------
 ; | Rectangles |
 ; +------------+
