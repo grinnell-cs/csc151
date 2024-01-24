@@ -538,6 +538,39 @@
 (define pen-color 2htdp:pen-color)
 (define pen-width 2htdp:pen-width)
 
+;;; (2htdp-style name solid outline mode color-or-pen description) -> image?
+;;;   name : symbol
+;;;   solid : (color? -> image?)
+;;;   outline : (color? real? -> image?)
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Do the 2hdtp-style work
+(define 2htdp-style
+  (lambda (name solid outlined mode color-or-pen)
+    (cond
+      [(or (equal? mode "solid") (equal? mode 'solid))
+       (when (not (color? color-or-pen))
+         (error name "requires a color, received ~a" color-or-pen))
+       (solid color-or-pen)]
+      [(or (equal? mode "outline") (equal? mode 'outline))
+       (cond
+         [(color? color-or-pen)
+          (outlined color-or-pen 1)]
+         [(2htdp:pen? color-or-pen)
+          (outlined (2htdp:pen-color color-or-pen)
+                    (2htdp:pen-width color-or-pen))]
+         [else
+          (error name "invalid color-or-pen: ~a" color-or-pen)])]
+      [(and (integer? mode) (<= 0 mode 255))
+       (when (not (color? color-or-pen))
+         (error name "requires a color, received ~a" color-or-pen))
+       (let ([tmp (color->rgb color-or-pen)])
+         (solid (rgb (rgb-red tmp)
+                     (rgb-green tmp)
+                     (rgb-blue tmp)
+                     (round (* 1/255 mode (rgb-alpha tmp))))))])))
+
 ; +----------------+-------------------------------------------------
 ; | Generic images |
 ; +----------------+
@@ -920,6 +953,7 @@
                          points
                          line-width))))
 
+
 ;;; (polygon points mode color-or-pen [description]) -> image?
 ;;;   points : (list-of pt?)
 ;;;   mode : (one-of "solid" "outline" integer?)
@@ -928,12 +962,22 @@
 ;;; Create the described polygon.
 (define polygon
   (lambda (points mode color-or-pen [description #f])
+    (2htdp-style 'polygon
+                 (lambda (color) 
+                   (solid-polygon points color description))
+                 (lambda (color line-width)
+                   (outlined-polygon points color line-width description))
+                 mode
+                 color-or-pen)))
+
+(define polygon-old
+  (lambda (points mode color-or-pen [description #f])
     (cond
       [(or (equal? mode "solid") (equal? mode 'solid))
        (when (not (color? color-or-pen))
          (error 'polygon "solid polygons need a color, received ~a"
                 color-or-pen))
-       (solid-polygon points color-or-pen)]
+       (solid-polygon points color-or-pen description)]
       [(or (equal? mode "outline") (equal? mode 'outline))
        (cond
          [(color? color-or-pen)
@@ -941,7 +985,8 @@
          [(2htdp:pen? color-or-pen)
           (outlined-polygon points 
                             (2htdp:pen-color color-or-pen)
-                            (2htdp:pen-width color-or-pen))]
+                            (2htdp:pen-width color-or-pen)
+                            description)]
          [else
           (error 'polygon "invalid color-or-pen: ~a" color-or-pen)])]
       [(and (integer? mode) (<= 0 mode 255))
@@ -952,7 +997,8 @@
          (solid-polygon points (rgb (rgb-red tmp)
                                     (rgb-green tmp)
                                     (rgb-blue tmp)
-                                    (round (* 1/255 mode (rgb-alpha tmp))))))])))
+                                    (round (* 1/255 mode (rgb-alpha tmp))))
+                        description))])))
           
 ; +------------+-----------------------------------------------------
 ; | Rectangles |
@@ -1152,6 +1198,23 @@
       [else
        (error 'rectangle-width "expected a rectangle, received ~e" rect)])))
 
+;;; (rectangle width height mode color-or-pen [description]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described polygon.
+(define rectangle
+  (lambda (width height mode color-or-pen [description #f])
+    (2htdp-style 'rectangle
+                 (lambda (color) 
+                   (solid-rectangle width height color description))
+                 (lambda (color line-width)
+                   (outlined-rectangle width height color line-width description))
+                 mode
+                 color-or-pen)))
+
 ; +---------+--------------------------------------------------------
 ; | Squares |
 ; +---------+
@@ -1260,6 +1323,22 @@
 (define square-side
   (lambda (sq)
     (rectangle-width sq)))
+
+;;; (square edge mode color-or-pen [description]) -> image?
+;;;   edge : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described square.
+(define square
+  (lambda (edge mode color-or-pen [description #f])
+    (2htdp-style 'square
+                 (lambda (color) 
+                   (solid-square edge color description))
+                 (lambda (color line-width)
+                   (outlined-square edge color line-width description))
+                 mode
+                 color-or-pen)))
 
 ; +----------+-------------------------------------------------------
 ; | Diamonds |
@@ -1439,6 +1518,23 @@
       [else
        (error 'diamond-width "not a diamond ~a" d)])))
 
+;;; (diamond width height mode color-or-pen [description]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described diamond.
+(define diamond
+  (lambda (width height mode color-or-pen [description #f])
+    (2htdp-style 'diamond
+                 (lambda (color) 
+                   (solid-diamond width height color description))
+                 (lambda (color line-width)
+                   (outlined-diamond width height color line-width description))
+                 mode
+                 color-or-pen)))
+
 ; +---------------------+--------------------------------------------
 ; | Isosceles triangles |
 ; +---------------------+
@@ -1608,6 +1704,23 @@
       [else
        (error 'isosceles-triangle-width "not an isosceles-triangle ~a" tri)])))
 
+;;; (isosceles-triangle width height mode color-or-pen [description]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described polygon.
+(define isosceles-triangle
+  (lambda (width height mode color-or-pen [description #f])
+    (2htdp-style 'isosceles-triangle
+                 (lambda (color) 
+                   (solid-isosceles-triangle width height color description))
+                 (lambda (color line-width)
+                   (outlined-isosceles-triangle width height color line-width description))
+                 mode
+                 color-or-pen)))
+
 ; +-----------------------+------------------------------------------
 ; | Equilateral triangles |
 ; +-----------------------+
@@ -1740,6 +1853,22 @@
              "expects an equilateral triangle, received ~a"
              tri))
     (isosceles-triangle-width tri)))
+
+;;; (equilateral-triangle edge mode color-or-pen [description]) -> image?
+;;;   edge : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described triangle.
+(define equilateral-triangle
+  (lambda (edge mode color-or-pen [description #f])
+    (2htdp-style 'equilateral-triangle
+                 (lambda (color) 
+                   (solid-equilateral-triangle edge color description))
+                 (lambda (color line-width)
+                   (outlined-equilateral-triangle edge color line-width description))
+                 mode
+                 color-or-pen)))
 
 ; +----------+-------------------------------------------------------
 ; | Ellipses |
@@ -1908,6 +2037,23 @@
       [else
        (error 'ellipse-height "expected an ellipse, received ~e" img)])))
 
+;;; (ellipse width height mode color-or-pen [description]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described ellipse.
+(define ellipse
+  (lambda (width height mode color-or-pen [description #f])
+    (2htdp-style 'ellipse
+                 (lambda (color) 
+                   (solid-ellipse width height color description))
+                 (lambda (color line-width)
+                   (outlined-ellipse width height color line-width description))
+                 mode
+                 color-or-pen)))
+
 ; +---------+--------------------------------------------------------
 ; | Circles |
 ; +---------+
@@ -2020,6 +2166,22 @@
 (define circle-diameter
   (lambda (circ)
     (ellipse-width circ)))
+
+;;; (circle diameter mode color-or-pen [description]) -> image?
+;;;   diameter : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described circle.
+(define circle
+  (lambda (diameter mode color-or-pen [description #f])
+    (2htdp-style 'circle
+                 (lambda (color) 
+                   (solid-circle diameter color description))
+                 (lambda (color line-width)
+                   (outlined-circle diameter color line-width description))
+                 mode
+                 color-or-pen)))
 
 ; +-----------------+------------------------------------------------
 ; | Transformations |
