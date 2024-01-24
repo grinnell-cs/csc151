@@ -686,13 +686,6 @@
 ; | Basic images |
 ; +--------------+
 
-;;; (basic-image [color] [description] [structure] [bits] [pict]) -> image?
-;;;   color : color?
-;;;   description : string?
-;;;   structure : list?
-;;;   bits : (vector-of rgb?)
-;;;   picture : 2htdp:image?
-;;; A basic image; intended primarily as a placeholder in the hierarchy.
 (sstruct %basic-image %image ([color #:mutable])
          #:transparent
          #:reflection-name 'basic-image
@@ -710,9 +703,23 @@
                 result)))]
          #:done)
 
+;;; (basic-image? val) -> boolean?
+;;;   val : any?
+;;; Determine if `val` is one of the basic image types (e.g., shapes).
 (define basic-image? %basic-image?)
+
+;;; (basic-image-color img) -> color?
+;;;   img : basic-image?
+;;; Determine the color of a basic image.
 (define basic-image-color %basic-image-color)
 
+;;; (basic-image [color] [description] [structure] [bits] [pict]) -> image?
+;;;   color : color?
+;;;   description : string?
+;;;   structure : list?
+;;;   bits : (vector-of rgb?)
+;;;   picture : 2htdp:image?
+;;; A basic image; intended primarily as a placeholder in the hierarchy.
 (define basic-image
   (lambda ([color (rgb 0 0 0 0)]
            [description "a basic image"]
@@ -1998,9 +2005,31 @@
                 result)))]
          #:done)
 
+
+;;; (transformed-image? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` is an image that has been created by transforming
+;;; another image (e.g., by scaling or rotating).
+(define transformed-image? %transformed?)
 (define transformed? %transformed?)
 
+;;; (transformed-subimage? img) -> image?
+;;;   img : transformed-image?
+;;; Determine what image was transformed to build `img`.
 (define subimage %transformed-img)
+
+;;; (transformed-set-image! img subimg) -> void?
+;;;   img : transformed-image?
+;;;   subimg : image?
+;;; Set the image that is transformed.
+;;;
+;;; This operation is dangerous and should generally only be used with a
+;;; clone of an image.
+(define transformed-set-image!
+  (lambda (img subimg)
+    (image-clear-fields! img)
+    (set-%transformed-img! img subimg)
+    img))
 
 ; +----------------------------------+-------------------------------
 ; | Image-preserving transformations |
@@ -2043,6 +2072,18 @@
 ;;; counter-clockwise.
 (define rotate
   (lambda (img angle [description #f])
+    (when (not (image? img))
+      (error 'rotate
+             "expects an image as the first parameter, received ~a"
+             img))
+    (when (not (real? angle))
+      (error 'rotate
+             "expects a real number as the angle of rotation (2nd param), received ~a"
+             angle))
+    (when (and description (not (string? description)))
+      (error 'rotate
+             "expects a string as the description (parameter 3), received ~a"
+             description))
     (%rotated description
               #f
               #f
@@ -2284,26 +2325,44 @@
 ; | Combinations |
 ; +--------------+
 
-(sstruct %combined %image ([images #:mutable])
+(sstruct %compound %image ([images #:mutable])
          #:transparent
          #:cloneable
          #:methods gen:img-subimages
          [(define subimages
             (lambda (img)
-              (%combined-images img)))]
+              (%compound-images img)))]
          #:methods gen:img-recolor
          [(define .image-recolor
             (lambda (img color)
               (let ([result (clone img)])
                 (image-clear-fields! result)
-                (set-%combined-images! result
+                (set-%compound-images! result
                                        (map (lambda (i)
                                               (image-recolor i color))
-                                            (%combined-images img)))
+                                            (%compound-images img)))
                 result)))]
          #:done)
 
-(define combined? %combined?)
+;;; (compound-image? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` is a compound image, one build by combining
+;;; other images (e.g., with `overlay`, `beside`, or `above`).
+(define compound-image? %compound?)
+(define compound? %compound?)
+
+;;; (compound-set-images! img images) -> void?
+;;;   img : compound-image?
+;;;   images : (list-of image?)
+;;; Set the images within a compound image.
+;;;
+;;; This operation is dangerous and should generally only be used with a
+;;; clone of an image.
+(define compound-set-images!
+  (lambda (img images)
+    (image-clear-fields! img)
+    (set-%compound-images! img images)
+    img))
 
 ;;; (halignment? val) -> boolean?
 ;;;   val : any?
@@ -2323,7 +2382,7 @@
 ; | Above |
 ; +-------+
 
-(sstruct %above %combined (halignment)
+(sstruct %above %compound (halignment)
          #:cloneable
          #:methods gen:img-make-desc
          [(define image-make-desc
@@ -2431,7 +2490,7 @@
 ; | Beside |
 ; +--------+
 
-(sstruct %beside %combined (valignment)
+(sstruct %beside %compound (valignment)
          #:cloneable
          #:methods gen:img-make-desc
          [(define image-make-desc
@@ -2575,7 +2634,7 @@
                                   (kernel (cdr remaining))))))))))
 
 
-(sstruct %overlay %combined (halignment valignment hoffset voffset)
+(sstruct %overlay %compound (halignment valignment hoffset voffset)
          #:cloneable
          #:methods gen:img-make-desc
          [(define image-make-desc
@@ -2687,6 +2746,29 @@
 ; +------+-----------------------------------------------------------
 ; | Misc |
 ; +------+
+
+;;; (image-map fun img) -> image?
+;;;   fun : (image? -> image?)
+;;;   img : image?
+;;; Apply a function to each basic image in an image.
+(define image-map
+  (lambda (fun img)
+    (cond
+      [(compound-image? img)
+       (let ([result (clone img)])
+         (compound-set-images! result 
+                               (map (lambda (subimg)
+                                      (image-map fun subimg))
+                                    (subimages img)))
+         result)]
+      [(transformed-image? img)
+       (let ([result (clone img)])
+         (transformed-set-image! result (image-map fun (subimage img)))
+         result)]
+      [(basic-image? img)
+       (fun img)]
+      [else
+       (error 'image-map "unknown image type ~a" img)])))
 
 ;;; (prepend-zeros str len) -> string?
 ;;;   str : string?
