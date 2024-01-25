@@ -1064,13 +1064,23 @@
 
 (sstruct %outlined-rectangle %outlined-polygon (width height)
          #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a ~a-by-~a rectangle"
+         #:methods gen:img-fname
+         [(define .image-fname
+            (lambda (img dir)
+              (format "~a/outlined-~a-~a-~ax~a-rectangle.png"
+                      (or dir ".")
+                      (line-width img)
                       (color->color-name (image-color img))
                       (rectangle-width img)
                       (rectangle-height img))))]
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (format "a ~a-by-~a rectangle outlined with a width-~a ~a line"
+                      (rectangle-width img)
+                      (rectangle-height img)
+                      (line-width img)
+                      (color->color-name (image-color img)))))]
          #:methods gen:img-make-pict
          [(define image-make-pict
             (lambda (img)
@@ -1100,13 +1110,14 @@
 (define outlined-rectangle-width  %outlined-rectangle-width)
 (define outlined-rectangle-height %outlined-rectangle-height)
 
-;;; (outlined-rectangle width height color line-width [desc]) -> image?
+;;; (outlined-rectangle width height color line-width [description]) -> image?
 ;;;   width : nonnegative-real?
 ;;;   height : nonnegative-real?
 ;;;   color : color?
 ;;;   line-width : positive-integer?
 ;;;   description : string?
-;;; A polygon whose vertices are given by `points` and whose color is `color`.
+;;; A rectangle of the specified width and height, outlined with a
+;;; line of the specified color and width.
 (define outlined-rectangle
   (lambda (width
            height
