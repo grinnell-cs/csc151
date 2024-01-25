@@ -637,6 +637,11 @@
       (set-image-desc! img (image-make-desc img)))
     (image-desc img)))
 
+;;; (describe-image img) -> string?
+;;;   img : image?
+;;; Get the description of the image.
+(define describe-image image-description)
+
 ;;; (image-picture img) -> 2htdp:image?
 ;;;   img : image?
 ;;; Get the underlying 2htdp image from the image.
