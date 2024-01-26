@@ -1769,7 +1769,7 @@
 ;;; Determines if `val` is a solid equilateral triangle. 
 (define solid-equilateral-triangle? %solid-equilateral-triangle?)
 
-;;; (solid-equilateral-triangle edge color [desc]) -> image?
+;;; (solid-equilateral-triangle edge color [description]) -> image?
 ;;;   edge: positive-real?
 ;;;   color : color?
 ;;;   description : string?
@@ -1824,7 +1824,7 @@
 ;;;   line-width : positive-integer?
 ;;;   description : string?
 ;;; An outlined equilateral-triangle whose inner size is width-by-height with
-;;; an outlined of `line-width`.
+;;; an outline of `line-width`. The inner triangle is transparent.
 (define outlined-equilateral-triangle
   (lambda (edge color line-width [description #f])
     (let ([width edge]
@@ -2029,7 +2029,8 @@
 
 ;;; (ellipse-width ell) -> nonnegative-real?
 ;;;   ell : ellipse?
-;;; Determine the width of an ellipse.
+;;; Determine the width of an ellipse. For outlined ellipses, this is
+;;; the width of the inner ellipse.
 (define ellipse-width
   (lambda (img)
     (cond
@@ -2040,9 +2041,10 @@
       [else
        (error 'ellipse-width "expected an ellipse, received ~e" img)])))
 
-;;; (ellipse-width ell) -> nonnegative-real?
+;;; (ellipse-height ell) -> nonnegative-real?
 ;;;   ell : ellipse?
-;;; Determine the width of an ellipse.
+;;; Determine the height of an ellipse. For outlined ellipses, this is
+;;; the height of the inner ellipse.
 (define ellipse-height
   (lambda (img)
     (cond
@@ -2748,7 +2750,9 @@
 ;;;   i2 : image?
 ;;;   ...
 ;;;   in : image?
-;;; Place the images beside one another.
+;;;   description : string?
+;;; Create an image with `i1` through `in` placed beside each other
+;;; in a row.
 (define beside
   (lambda images
     (when (null? images)
@@ -2772,13 +2776,14 @@
                "center"))))
 
 ;;; (beside/align valignment i1 i2 ... in [description]) -> image?
-;;;   halignment : valignment?
+;;;   valignment : valignment?
 ;;;   i1 : image?
 ;;;   i2 : image?
 ;;;   ...
 ;;;   in : image?
 ;;;   description : string?
-;;; Place the images above one another, aligned as described.
+;;; Place `i1` through `in` in a row beside one another, aligned as 
+;;; described.
 ;;;
 ;;; valignment is either "top", "center", or "bottom".
 (define beside/align
@@ -2930,7 +2935,7 @@
 ;;;   i2 : image?
 ;;;   ...
 ;;;   in : image?
-;;; Place the images above one another, aligned as described.
+;;; Overlay the two images, aligning them as described.
 ;;;
 ;;; halignment is either "left", "center", or "right".
 ;;; valignment is either "top", "center", or "bottom".
