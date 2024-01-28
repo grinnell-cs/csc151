@@ -2972,6 +2972,19 @@
 ; | Misc |
 ; +------+
 
+;;; (basic-images img) -> (listof? image?)
+;;;   img : image?
+;;; Finds all of the basic images contained in img.
+(define basic-images
+  (lambda (img)
+    (cond
+      [(basic-image? img)
+       (list img)]
+      [(transformed? img)
+       (basic-images (subimage img))]
+      [(compound? img)
+       (apply append (map basic-images (subimages img)))])))
+
 ;;; (image-map fun img) -> image?
 ;;;   fun : (image? -> image?)
 ;;;   img : image?
