@@ -929,7 +929,9 @@
          #:methods gen:img-line-width
          [(define line-width
             (lambda (img)
-              (%outlined-polygon-line-width img)))]
+              (min 255
+                   (max 0
+                        (round (%outlined-polygon-line-width img))))))]
          #:done)
 
 (define outlined-polygon? %outlined-polygon?)
@@ -1986,7 +1988,9 @@
          #:methods gen:img-line-width
          [(define line-width
             (lambda (img)
-              (%outlined-ellipse-line-width img)))]
+              (max 0
+                   (min 255
+                        (round (%outlined-ellipse-line-width img))))))]
          #:done)
 
 (define outlined-ellipse? %outlined-ellipse?)
