@@ -2885,8 +2885,8 @@
          #:methods gen:img-make-stru
          [(define image-make-stru
             (lambda (img)
-              (cons 'above/align
-                    (cons (%above-halignment img)
+              (cons 'overlay/align
+                    (cons (%overlay-halignment img)
                           (map image-structure (subimages img))))))]
          #:done)
 
@@ -2916,7 +2916,7 @@
       (let kernel ([remaining images])
         (when (not (null? remaining))
           (when (not (image? (car remaining)))
-            (error 'above "expects images, received ~a" (car remaining)))
+            (error 'overlay "expects images, received ~a" (car remaining)))
           (kernel (cdr remaining))))
       (%overlay description
                 #f
@@ -2967,6 +2967,125 @@
                 valignment
                 0
                 0))))
+
+; +-------+----------------------------------------------------------
+; | Place |
+; +-------+
+
+(sstruct %place %compound (hside x vside y)
+         #:cloneable
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (let ([sub (subimages img)])
+                (format "one image (~a) whose ~a is placed at ~a and whose ~a is placed at ~a on another image (~a)"
+                        (image-description (car sub))
+                        (%place-hside img)
+                        (%place-x img)
+                        (%place-vside img)
+                        (%place-y img)
+                        (image-description (cadr sub))))))]
+         #:methods gen:img-make-pict
+         [(define image-make-pict
+            (lambda (img)
+              (let ([sub (subimages img)])
+                (2htdp:place-image/align (image-picture (car sub))
+                                         (%place-x img)
+                                         (%place-y img)
+                                         (%place-hside img)
+                                         (%place-vside img)
+                                         (image-picture (cadr sub))))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (let ([sub (subimages img)])
+                (list 'place/sides
+                      (image-structure (car sub))
+                      (%place-hside img)
+                      (%place-x img)
+                      (%place-vside img)
+                      (%place-y img)
+                      (image-structure (cadr sub))))))]
+         #:done)
+
+;;; (place/center img x y bg [description]) -> image?
+;;;   img : image?
+;;;   x : real?
+;;;   y : real?
+;;;   bg : image?
+;;;   description : string?
+;;; Place the center of `img` at position `(x,y)` on `bg`, cropping at
+;;; the edges of `bg`.
+(define place/center
+  (lambda (img x y bg [description #f])
+    (when (not (image? img))
+      (error 'place/center
+             "expects an image as the first parameter, received ~a"
+             img))
+    (when (not (real? x))
+      (error 'place/center
+             "expects a real number as the second parameter, received ~a"
+             x))
+    (when (not (real? y))
+      (error 'place/center
+             "expects a real number as the third parameter, received ~a"
+             y))
+    (when (not (image? bg))
+      (error 'place/center
+             "expects an image as the fourth parameter, received ~a"
+             bg))
+    (%place description
+            #f
+            #f
+            #f
+            (list img bg)
+            "center"
+            x 
+            "center"
+            y)))
+
+;;; (place img xside x yside y bg) -> image?
+;;;   img : image?
+;;;   xside : (one-of "left" "center" "right")
+;;;   x : real?
+;;;   yside : (one-of "top" "center" "bottom")
+;;;   y : real?
+;;;   bg : image?
+;;;   description : string?
+;;; Place `img` on `bg`, with the `xside` of `img` at `x` and the
+;;; `yside` of `img` at `y`. Crop the result at the edges of `bg`.
+(define place
+  (lambda (img xside x yside y bg [description #f])
+    (when (not (image? img))
+      (error 'place 
+             "expects an image as the first parameter, received ~a"
+             img))
+    (when (not (member xside '("left" "center" "right")))
+      (error 'place 
+              "expects left, center, or right as the second parameter, receved ~a"
+              xside))
+    (when (not (real? x))
+      (error 'place "expects number as the third parameter, received ~a"
+             x))
+    (when (not (member yside '("top" "center" "bottom")))
+      (error 'place 
+              "expects top, center, or bottom as the fourth parameter, receved ~a"
+              yside))
+    (when (not (real? y))
+      (error 'place "expects a real number as the fifth parameter, received ~a"
+             y))
+    (when (not (image? bg))
+      (error 'place "expects an image as the sixth parameter, received ~a"
+             bg))
+    (%place description
+            #f
+            #f
+            #f
+            (list img bg)
+            xside
+            x 
+            yside
+            y)))
 
 ; +------+-----------------------------------------------------------
 ; | Misc |
