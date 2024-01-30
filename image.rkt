@@ -2545,7 +2545,83 @@
              hfactor
              vfactor)))
 
-(sstruct %cropped %transformed (left top width height))
+(sstruct %cropped %transformed (left top width height)
+         #:cloneable
+         #:methods gen:img-make-desc
+         [(define image-make-desc
+            (lambda (img)
+              (let ([subdesc (image-description (subimage img))])
+                (format "~a, cropped to a left edge of ~a, a top edge of ~a, a width of ~a, and a height of ~a"
+                        subdesc
+                        (%cropped-left img)
+                        (%cropped-top img)
+                        (%cropped-width img)
+                        (%cropped-height img)))))]
+         #:methods gen:img-make-pict
+         [(define image-make-pict
+            (lambda (img)
+              (2htdp:crop (%cropped-left img)
+                          (%cropped-top img)
+                          (%cropped-width img)
+                          (%cropped-height img)
+                          (image-picture (subimage img)))))]
+         #:methods gen:img-make-stru
+         [(define image-make-stru
+            (lambda (img)
+              (list 'crop
+                    (image-structure (subimage img))
+                    (%cropped-left img)
+                    (%cropped-top img)
+                    (%cropped-width img)
+                    (%cropped-height img))))]
+         #:done)
+
+
+;;; (cropped? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` is a cropped version of another image.
+(define cropped? %cropped?)
+
+;;; (crop img left top width height [description]) -> image?
+;;;   img : image?
+;;;   left : real?
+;;;   top : real?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   description : string?
+;;; Crop `img` with the left edge at `left`, the top edge at `top`,
+;;; and the specified width and height.
+(define crop
+  (lambda (img left top width height [description #f])
+    (when (not (image? img))
+      (error 'crop
+             "expects an image for the first parameter, received ~a"
+             img))
+    (when (not (real? left))
+      (error 'crop
+             "expects a real number for the second parameter (left), received ~a"
+             left))
+    (when (not (real? top))
+      (error 'crop
+             "expects a real number for the third parameter (top), received ~a"
+             top))
+    (when (not (real? width))
+      (error 'crop
+             "expects a real number for the fourth parameter (width), received ~a"
+             width))
+    (when (not (real? height))
+      (error 'crop
+             "expects a real number for the fifth parameter (height), received ~a"
+             height))
+    (%cropped description
+              #f
+              #f
+              #f
+              img
+              left
+              top
+              width
+              height)))
 
 ; +--------------+---------------------------------------------------
 ; | Combinations |
@@ -3066,15 +3142,15 @@
              img))
     (when (not (member xside '("left" "center" "right")))
       (error 'place 
-              "expects left, center, or right as the second parameter, receved ~a"
-              xside))
+             "expects left, center, or right as the second parameter, receved ~a"
+             xside))
     (when (not (real? x))
       (error 'place "expects number as the third parameter, received ~a"
              x))
     (when (not (member yside '("top" "center" "bottom")))
       (error 'place 
-              "expects top, center, or bottom as the fourth parameter, receved ~a"
-              yside))
+             "expects top, center, or bottom as the fourth parameter, receved ~a"
+             yside))
     (when (not (real? y))
       (error 'place "expects a real number as the fifth parameter, received ~a"
              y))
