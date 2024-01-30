@@ -82,3 +82,16 @@
     (lambda (val)
       (and (member val vals) #t))))
 
+;;; (param-error proc-name param-num param-name value) -> (void)
+;;;   proc-name : symbol?
+;;;   param-num : positive-integer?
+;;;   param-name : symbol?
+;;;   value : any
+;;; Issue an error.
+(define param-error
+  (lambda (proc-name param-num param-name value)
+    (error proc-name
+           "expects a procedure for parameter ~a (~a), received ~a"
+           param-num
+           param-name
+           value)))
