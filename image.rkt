@@ -59,8 +59,6 @@
                       [(define clone
                          (lambda (val) (struct-copy ,name val)))])))
 
-
-
 ; +------------+-----------------------------------------------------
 ; | Interfaces |
 ; +------------+
@@ -688,7 +686,7 @@
 
 ;;; (image-left img) -> real?
 ;;;   img : image?
-;;; Determine the x coordinate of the left edge of img. 
+;;; Determine the x coordinate of the left edge of img.
 ;;;
 ;;; This should always be 0.
 (define image-left
@@ -709,7 +707,7 @@
 
 ;;; (image-top img) -> real?
 ;;;   img : image?
-;;; Determine the y coordinate of the top edge of img. 
+;;; Determine the y coordinate of the top edge of img.
 ;;;
 ;;; This should always be 0.
 (define image-top
@@ -970,7 +968,7 @@
 (define polygon
   (lambda (points mode color-or-pen [description #f])
     (2htdp-style 'polygon
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-polygon points color description))
                  (lambda (color line-width)
                    (outlined-polygon points color line-width description))
@@ -990,7 +988,7 @@
          [(color? color-or-pen)
           (outlined-polygon points color-or-pen 1)]
          [(2htdp:pen? color-or-pen)
-          (outlined-polygon points 
+          (outlined-polygon points
                             (2htdp:pen-color color-or-pen)
                             (2htdp:pen-width color-or-pen)
                             description)]
@@ -1006,7 +1004,7 @@
                                     (rgb-blue tmp)
                                     (round (* 1/255 mode (rgb-alpha tmp))))
                         description))])))
-          
+
 ; +------------+-----------------------------------------------------
 ; | Rectangles |
 ; +------------+
@@ -1226,7 +1224,7 @@
 (define rectangle
   (lambda (width height mode color-or-pen [description #f])
     (2htdp-style 'rectangle
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-rectangle width height color description))
                  (lambda (color line-width)
                    (outlined-rectangle width height color line-width description))
@@ -1351,7 +1349,7 @@
 (define square
   (lambda (edge mode color-or-pen [description #f])
     (2htdp-style 'square
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-square edge color description))
                  (lambda (color line-width)
                    (outlined-square edge color line-width description))
@@ -1401,7 +1399,7 @@
     (let* ([w (/ width 2)]
            [h (/ height 2)])
       (list (pt w 0) (pt width h) (pt w height) (pt 0 h)))))
-    
+
 ;;; (solid-diamond width height color [desc]) -> image?
 ;;;   width : nonnegative-real?
 ;;;   height : nonnegative-real?
@@ -1546,7 +1544,7 @@
 (define diamond
   (lambda (width height mode color-or-pen [description #f])
     (2htdp-style 'diamond
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-diamond width height color description))
                  (lambda (color line-width)
                    (outlined-diamond width height color line-width description))
@@ -1732,7 +1730,7 @@
 (define isosceles-triangle
   (lambda (width height mode color-or-pen [description #f])
     (2htdp-style 'isosceles-triangle
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-isosceles-triangle width height color description))
                  (lambda (color line-width)
                    (outlined-isosceles-triangle width height color line-width description))
@@ -1768,7 +1766,7 @@
 
 ;;; (solid-equilateral-triangle? val) -> boolean?
 ;;;   val : any?
-;;; Determines if `val` is a solid equilateral triangle. 
+;;; Determines if `val` is a solid equilateral triangle.
 (define solid-equilateral-triangle? %solid-equilateral-triangle?)
 
 ;;; (solid-equilateral-triangle edge color [description]) -> image?
@@ -1867,7 +1865,7 @@
 (define equilateral-triangle-edge
   (lambda (tri)
     (when (not (equilateral-triangle? tri))
-      (error 'equilateral-triangle-edge 
+      (error 'equilateral-triangle-edge
              "expects an equilateral triangle, received ~a"
              tri))
     (isosceles-triangle-width tri)))
@@ -1881,7 +1879,7 @@
 (define equilateral-triangle
   (lambda (edge mode color-or-pen [description #f])
     (2htdp-style 'equilateral-triangle
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-equilateral-triangle edge color description))
                  (lambda (color line-width)
                    (outlined-equilateral-triangle edge color line-width description))
@@ -2069,7 +2067,7 @@
 (define ellipse
   (lambda (width height mode color-or-pen [description #f])
     (2htdp-style 'ellipse
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-ellipse width height color description))
                  (lambda (color line-width)
                    (outlined-ellipse width height color line-width description))
@@ -2198,7 +2196,7 @@
 (define circle
   (lambda (diameter mode color-or-pen [description #f])
     (2htdp-style 'circle
-                 (lambda (color) 
+                 (lambda (color)
                    (solid-circle diameter color description))
                  (lambda (color line-width)
                    (outlined-circle diameter color line-width description))
@@ -2716,7 +2714,7 @@
 ;;;   img : above?
 ;;; Determine the horizontal alignment of a stack of images.
 (define above-halignment %above-halignment)
-  
+
 ;;; (all-but-last lst) -> list?
 ;;;   lst : nonempty-list?
 ;;; Create a list with all the elements of lst but the last one.
@@ -2824,7 +2822,7 @@
 ;;;   img : beside?
 ;;; Determine the vertical alignment of a sequence of images.
 (define beside-valignment %beside-valignment)
-  
+
 ;;; (beside i1 i2 ... in [description]) -> image?
 ;;;   i1 : image?
 ;;;   i2 : image?
@@ -2862,7 +2860,7 @@
 ;;;   ...
 ;;;   in : image?
 ;;;   description : string?
-;;; Place `i1` through `in` in a row beside one another, aligned as 
+;;; Place `i1` through `in` in a row beside one another, aligned as
 ;;; described.
 ;;;
 ;;; valignment is either "top", "center", or "bottom".
@@ -2908,14 +2906,14 @@
     (let* ([w (apply max (map image-width images))]
            [h (apply max (map image-height images))]
            [bg (transparent-rectangle w h)])
-      (let ([hfun (cond 
+      (let ([hfun (cond
                     [(equal? halignment "left")
                      (lambda (img) 0)]
                     [(equal? halignment "right")
                      (lambda (img) (- (image-width img) w))]
                     [else
                      (lambda (img) (* 1/2 (- (image-width img) w)))])]
-            [vfun (cond 
+            [vfun (cond
                     [(equal? valignment "top")
                      (lambda (img) 0)]
                     [(equal? valignment "bottom")
@@ -3120,7 +3118,7 @@
             #f
             (list img bg)
             "center"
-            x 
+            x
             "center"
             y)))
 
@@ -3137,18 +3135,18 @@
 (define place
   (lambda (img xside x yside y bg [description #f])
     (when (not (image? img))
-      (error 'place 
+      (error 'place
              "expects an image as the first parameter, received ~a"
              img))
     (when (not (member xside '("left" "center" "right")))
-      (error 'place 
+      (error 'place
              "expects left, center, or right as the second parameter, receved ~a"
              xside))
     (when (not (real? x))
       (error 'place "expects number as the third parameter, received ~a"
              x))
     (when (not (member yside '("top" "center" "bottom")))
-      (error 'place 
+      (error 'place
              "expects top, center, or bottom as the fourth parameter, receved ~a"
              yside))
     (when (not (real? y))
@@ -3163,7 +3161,7 @@
             #f
             (list img bg)
             xside
-            x 
+            x
             yside
             y)))
 
@@ -3193,7 +3191,7 @@
     (cond
       [(compound-image? img)
        (let ([result (clone img)])
-         (compound-set-images! result 
+         (compound-set-images! result
                                (map (lambda (subimg)
                                       (image-map fun subimg))
                                     (subimages img)))
