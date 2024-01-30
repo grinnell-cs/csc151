@@ -112,3 +112,40 @@
            num
            (quote param)
            param)))
+
+;;; (greater-than num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that hold only when its parameter is greater
+;;; than `num`.
+(define greater-than
+  (lambda (num)
+    (lambda (val)
+      (> val num))))
+
+;;; (greater-equal num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that hold only when its parameter is greater
+;;; than or equal to `num`.
+(define greater-equal
+  (lambda (num)
+    (lambda (val)
+      (>= val num))))
+
+;;; (less-than num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that hold only when its parameter is less
+;;; than `num`.
+(define less-than
+  (lambda (num)
+    (lambda (val)
+      (< val num))))
+
+;;; (less-equal num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that hold only when its parameter is less
+;;; than or equal to `num`.
+(define less-equal
+  (lambda (num)
+    (lambda (val)
+      (<= val num))))
+
