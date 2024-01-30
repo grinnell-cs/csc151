@@ -82,16 +82,33 @@
     (lambda (val)
       (and (member val vals) #t))))
 
-;;; (param-error proc-name param-num param-name value) -> (void)
+;;; (param-error proc-name param-type param-num param-name value) -> (void)
 ;;;   proc-name : symbol?
+;;;   param-type : symbol?
 ;;;   param-num : positive-integer?
 ;;;   param-name : symbol?
 ;;;   value : any
 ;;; Issue an error.
 (define param-error
-  (lambda (proc-name param-num param-name value)
+  (lambda (proc-name param-type param-num param-name value)
     (error proc-name
-           "expects a procedure for parameter ~a (~a), received ~a"
+           "expects ~a for parameter ~a (~a), received ~a"
+           param-type
            param-num
            param-name
            value)))
+
+;;; (param-check! proc num type? param) -> void
+;;;   proc-name : identifier?
+;;;   param-num : positive-integer?
+;;;   type? : predicate?
+;;;   param : identifier?
+;;; Checks a parameter (I think).
+(define-syntax-rule (param-check! proc num type? param)
+  (when (not (type? param))
+    (error (quote proc)
+           "expects ~a for parameter ~a (~a), received ~a"
+           (quote type?)
+           num
+           (quote param)
+           param)))
