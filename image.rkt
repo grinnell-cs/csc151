@@ -13,6 +13,7 @@
 (require "colors.rkt")
 (require "sstruct.rkt")
 (require "cloneable.rkt")
+(require "bitmaps.rkt")
 (require "type-predicates.rkt")
 
 (provide (all-defined-out))
@@ -402,28 +403,28 @@
 ;;; Determines if an rgb color is transparent.
 (define transparent?
   (lambda (color)
-    (zero? (rgb-alpha color))))
+    (zero? (2htdp:color-alpha color))))
 
-;;; (column-transparent? bitmap col) -> boolean?
-;;;   bitmap : bitmap?
-;;;   col : (all-of nonnegative-integer? (less-than (image-width img)))
+;;; (column-transparent? bm col) -> boolean?
+;;;   bm : bitmap?
+;;;   col : (all-of nonnegative-integer? (cut (< <> (image-width img))))
 ;;; Determine if the specified column contains only transparent pixels.
 (define column-transparent?
-  (lambda (bitmap col)
+  (lambda (bm col)
     (let kernel ([row 0])
-      (or (>= row (bitmap-height bitmap))
-          (and (transparent? (bitmap-get-pixel/kernel bitmap col row))
+      (or (>= row (bitmap-height bm))
+          (and (transparent? (bitmap-pixel bm col row))
                (kernel (+ row 1)))))))
 
 ;;; (row-transparent? bm row) -> boolean?
 ;;;   img : bitmap?
-;;;   row : (all-of nonnegative-integer? (less-than (image-height img)))
+;;;   row : (all-of nonnegative-integer? (cut (< <> (image-height img))))
 ;;; Determine if the specified column contains only transparent pixels.
 (define row-transparent?
   (lambda (bm row)
     (let kernel ([col 0])
       (or (>= col (bitmap-width bm))
-          (and (transparent? (bitmap-get-pixel bm col row))
+          (and (transparent? (bitmap-pixel bm col row))
                (kernel (+ col 1)))))))
 
 ;;; (transparent-rectangle width height) -> 2htdp:image?
@@ -450,7 +451,7 @@
                     (cons minw hoff)
                     (let* ([bg (transparent-rectangle propw height)]
                            [tmp (2htdp:overlay/offset img hoff 0 bg)]
-                           [bm (2htdp->bitmap tmp)]
+                           [bm (image->bitmap tmp)]
                            [drop-left? (column-transparent? bm 0)]
                            [drop-right? (column-transparent? bm (- propw 1))])
                       ; (displayln (list 'drop-left? drop-left? 'drop-right? drop-right?))
@@ -663,18 +664,14 @@
 ;;; Get the height of the image.
 (define image-height
   (lambda (img)
-    (if (%bitmap? img)
-        (%bitmap-height img)
-        (2htdp:image-height (image-picture img)))))
+    (2htdp:image-height (image-picture img))))
 
 ;;; (image-width img) -> exact-integer?
 ;;;   img : image?
 ;;; Get the width of the image.
 (define image-width
   (lambda (img)
-    (if (%bitmap? img)
-        (%bitmap-width img)
-        (2htdp:image-width (image-picture img)))))
+    (2htdp:image-width (image-picture img))))
 
 ;;; (image-clear-fields! img) -> image?
 ;;;   img : image?
@@ -2206,159 +2203,6 @@
                  mode
                  color-or-pen)))
 
-; +---------+--------------------------------------------------------
-; | Bitmaps |
-; +---------+
-
-(sstruct %bitmap %image (width height)
-         #:transparent
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              "a bitmap"))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:color-list->bitmap (map rgb->2htdp
-                                             (vector->list (image-bitmap img)))
-                                        (image-width img)
-                                        (image-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'bitmap (image-width img) (image-height img))))]
-         #:done)
-
-(define bitmap? %bitmap?)
-(define bitmap-width %bitmap-width)
-(define bitmap-height %bitmap-height)
-
-;;; (image-compute pos2color width height description) -> image?
-;;;   pos2color : procedure?
-;;;   width : positive-integer?
-;;;   height : positive-integer?
-;;;   description : string?
-;;; Creates a new `width`-by-`height` bitmap by applying `pos2color` to
-;;; each (col,row) coordinate to determine the color at that position.
-;;;
-;;; (pos2color col row) -> rgb?
-;;;   col : non-negative-integer?
-;;;   row : non-negative-integer?
-;;; Compute a color from (col,row)
-(define image-compute
-  (lambda (pos2color width height description)
-    (param-check! image-compute 1 procedure? pos2color)
-    (param-check! image-compute 2 positive-integer? width)
-    (param-check! image-compute 3 positive-integer? height)
-    (param-check! image-compute 4 string? description)
-    (let ([pixels (make-vector (* width height))])
-      (let kernel ([pos 0]
-                   [col 0]
-                   [row 0])
-        (cond
-          [(>= col width)
-           (kernel pos 0 (+ row 1))]
-          [(< row height)
-           (vector-set! pixels pos (pos2color col row))
-           (kernel (+ pos 1) (+ col 1) row )]))
-      (%bitmap description
-               #f
-               pixels
-               #f
-               width
-               height))))
-
-;;; (bitmap width height description) -> image?
-;;;   width : positive-integer?
-;;;   height : positive-integer?
-;;;   description : string?
-;;; Creates a new `width`-by-`height` transparent bitmap.
-(define bitmap
-  (lambda (width height description)
-    (when (not (positive-integer? width))
-      (param-error 'image-compute 1 'width width))
-    (when (not (positive-integer? height))
-      (param-error 'image-compute 2 'height height))
-    (when (not (string? description))
-      (param-error 'image-compute 3 'description description))
-    (%bitmap description
-             #f
-             (make-vector (* width height) (rgb 0 0 0 0))
-             #f
-             width
-             height)))
-
-;;; (bitmap-get-pixel bitmap col row) -> color?
-;;;   bitmap : bitmap?
-;;;   col : (all-of nonnegative-integer? (less-than (bitmap-width bitmap)))
-;;;   row : (all-of nonnegative-integer? (less-than (bitmap-height bitmap)))
-;;; Get the color of the pixel at position (`col`,`row`) in `bitmap`.
-(define bitmap-get-pixel/kernel
-  (lambda (bitmap col row)
-    (vector-ref (%image-bits bitmap)
-                (+ col (* row (%bitmap-width bitmap))))))
-
-(define bitmap-get-pixel
-  (lambda (bitmap col row)
-    (param-check! bitmap-get-pixel 1 bitmap? bitmap)
-    (param-check! bitmap-get-pixel 2 nonnegative-integer? col)
-    (param-check! bitmap-get-pixel 2 (less-than (image-width bitmap)) col)
-    (param-check! bitmap-get-pixel 3 nonnegative-integer? row)
-    (param-check! bitmap-get-pixel 3 (less-than (image-height bitmap)) row)
-    (bitmap-get-pixel/kernel bitmap col row)))
-
-;;; (bitmap-set-pixel! bitmap col row color) -> void?
-;;;   bitmap : bitmap?
-;;;   col : (all-of non-negative-integer? (cut (< <> (image-width img))))
-;;;   row : (all-of non-negative-integer? (cut (< <> (image-height img))))
-;;;   color : rgb?
-;;; Set the specified pixel of the bitmap.
-(define bitmap-set-pixel!/kernel
-  (lambda (bitmap col row color)
-    (vector-set! (%image-bits bitmap)
-                 (+ col (* row (%bitmap-width bitmap)))
-                 color)
-    (set-image-pict! bitmap #f)))
-
-(define bitmap-set-pixel!
-  (lambda (bitmap col row color)
-    (param-check! bitmap-set-pixel! 1 bitmap? bitmap)
-    (param-check! bitmap-set-pixel! 2 nonnegative-integer? col)
-    (param-check! bitmap-set-pixel! 2 (less-than (image-width bitmap)) col)
-    (param-check! bitmap-set-pixel! 3 nonnegative-integer? row)
-    (param-check! bitmap-set-pixel! 3 (less-than (image-height bitmap)) row)
-    (param-check! bitmap-set-pixel! 4 rgb? color)
-    (bitmap-set-pixel!/kernel bitmap col row color)))
-
-;;; (2htdp->bitmap image) -> bitmap?
-;;;   img : 2htdp:image?
-;;; Convert a 2htdp image to a bitmap
-(define 2htdp->bitmap
-  (lambda (img)
-    (let* ([tmp (%bitmap "an image"
-                         #f
-                         #f
-                         img
-                         (2htdp:image-width img)
-                         (2htdp:image-height img))])
-      ; The next line forces the creation of the bitmap
-      (image-bitmap tmp)
-      tmp)))
-
-;;; (image->bitmap image) -> bitmap?
-;;;   img : image?
-;;; Convert an image into a bitmap.  (E.g., so that we can get and
-;;; set pixels.)
-(define image->bitmap
-  (lambda (img)
-    (%bitmap (image-description img)
-             #f
-             (image-bitmap img)
-             #f
-             (image-width img)
-             (image-height img))))
-
 ; +-----------------+------------------------------------------------
 ; | Transformations |
 ; +-----------------+
@@ -3320,25 +3164,6 @@
             x
             yside
             y)))
-
-;;; (image-subtract img1 img2) -> image?
-;;;   img1 : image?
-;;;   img2 : image?
-;;; "Subtract" `img2` from `img1`, decreasing the opacity of each
-;;; pixel in `img1` by the opacity of the corresponding pixel in
-;;; `img2`. `image-subtract` does not affect the colors in `img1`.
-(define image-subtract
-  (lambda (img1 img2)
-    (let* ([w (image-width img1)]
-           [h (image-height img2)]
-           [bits1 (image->bitmap (image-picture img1))]
-           [tmp (2htdp:crop 0 0 w h
-                            (2htdp:overlay/align "left" "top"
-                                                 (image-picture img2)
-                                                 (transparent-rectangle w h)))]
-           [bits2 (image->bitmap tmp)])
-      img1)))
-
 
 ; +------+-----------------------------------------------------------
 ; | Misc |
