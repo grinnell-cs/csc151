@@ -114,8 +114,8 @@
 
 ;;; (bitmap-pixel bitmap col row) -> color?
 ;;;   bitmap : bitmap?
-;;;   col : non-negative-integer? (less than (bitmap-width bitmap))
-;;;   row : non-negative-integer? (less than (bitmap-height bitmap))
+;;;   col : (all-of nonnegative-integer? (less-than (bitmap-width bitmap)))
+;;;   row : (all-of nonnegative-integer? (less-than (bitmap-height bitmap)))
 ;;; Get the color of the pixel at position (`col`,`row`) in `bitmap`.
 (define bitmap-pixel
   (lambda (bitmap col row)
