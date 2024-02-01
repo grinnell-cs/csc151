@@ -16,7 +16,6 @@
 (require "csv.rkt")
 (require "colors.rkt")
 (require "image.rkt")
-(require "bitmaps.rkt")
 
 (provide
   (all-from-out "lists.rkt")
@@ -26,5 +25,4 @@
   (all-from-out "files.rkt")
   (all-from-out "csv.rkt")
   (all-from-out "colors.rkt")
-  (all-from-out "image.rkt")
-  (all-from-out "bitmaps.rkt"))
+  (all-from-out "image.rkt"))
