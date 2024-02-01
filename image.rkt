@@ -597,8 +597,10 @@
          #:methods gen:custom-write
          [(define write-proc
             (lambda (img port mode)
+              ; (displayln (list 'write-proc 'img port mode))
               (when (markdown-dir)
-                (markdown-image img))
+                (when (not (equal? (format "~a" port) "#<output-port:null>"))
+                  (markdown-image img)))
               (write (image-picture img) port)))]
          #:done)
 
