@@ -2278,9 +2278,9 @@
 ;;; Creates a new `width`-by-`height` transparent bitmap.
 (define bitmap
   (lambda (width height description)
-    (param-check! image-compute 1 positive-integer? width)
-    (param-check! image-compute 2 positive-integer? height)
-    (param-check! image-compute 3 string? description)
+    (param-check! bitmap 1 positive-integer? width)
+    (param-check! bitmap 2 positive-integer? height)
+    (param-check! bitmap 3 string? description)
     (%bitmap description
              #f
              (make-vector (* width height) (rgb 0 0 0 0))
@@ -3326,18 +3326,22 @@
 ;;;   description : string?
 ;;; "Subtract" `img2` from `img1`, decreasing the opacity of each
 ;;; pixel in `img1` by the opacity of the corresponding pixel in
-;;; `img2`. `image-subtract` does not affect the colors in `img1`.
+;;; `img2`. `image-subtract` does not otherwise affect the colors
+;;; in `img1`.
 (define image-subtract
   (lambda (img1 img2 [description #f])
     (let* ([w (image-width img1)]
-           [h (image-height img2)]
+           [h (image-height img1)]
            [bits1 (image-bitmap img1)]
            [tmp (2htdp:crop 0 0 w h
                             (2htdp:overlay/align "left" "top"
                                                  (image-picture img2)
                                                  (transparent-rectangle w h)))]
            [bits2 (image-bitmap (2htdp->bitmap tmp))]
-           [result (bitmap w h description)]
+           [result (bitmap w h (or description
+                                   (format "the result of subtracting ~a from ~a"
+                                           (image-description img2)
+                                           (image-description img1))))]
            [bits (image-bitmap result)])
       (let kernel ([pos (- (vector-length bits) 1)])
         (when (>= pos 0)
