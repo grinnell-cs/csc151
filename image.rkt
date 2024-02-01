@@ -3433,16 +3433,6 @@
 ; | Notes |
 ; +-------+
 
-;;; (cat color) -> image?
-;;;   color : color?
-;;; Create an image that might resemble a cat, primarily for testing 
-;;; purposes.
-(define cat
-  (lambda (color)
-    (solid-polygon (list (pt 0 0) (pt 100 0) (pt 50 20) (pt 100 100)
-                         (pt 0 100) (pt 50 80) (pt 50 20))
-                   color)))
-
 #|
 |#
 
