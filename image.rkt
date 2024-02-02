@@ -806,7 +806,14 @@
 
 (sstruct %polygon %shape (points))
 
+;;; (polygon? img) -> boolean?
+;;;   image : image?
+;;; Determines whether `img` is a polygon.
 (define polygon? %polygon?)
+
+;;; (polygon-points poly) -> (list-of pt?)
+;;;   poly : polygon?
+;;; Grab the points of a polygon.
 (define polygon-points %polygon-points)
 
 ;;; (polygon-sides poly) -> nonnegative-integer?
@@ -881,7 +888,11 @@
 ;;;   points : (list-of point?)
 ;;;   color : color?
 ;;;   description : string?
-;;; A polygon whose vertices are given by `points` and whose color is `color`.
+;;; Create polygon whose vertices are given by `points` and whose 
+;;; color is `color`.
+;;;
+;;; Warning! The edges of the polygon should not cross. In such cases,
+;;; the results are unpredictable.
 (define solid-polygon
   (lambda (points
            color
@@ -939,16 +950,23 @@
 
 (define outlined-polygon? %outlined-polygon?)
 
-;;; (outlined-polygon points color [desc]) -> image?
+;;; (outlined-polygon points color pen-width [description]) -> image?
 ;;;   points : (list-of point?)
 ;;;   color : color?
-;;;   line-width : nonnegative-integer?
+;;;   line-width : positive-integer?
 ;;;   description : string?
-;;; A polygon whose vertices are given by `points`, whose color is `color`,
-;;; and whose line width is given by `line-width`.
+;;; Create a polygon whose vertices are given by `points` and which
+;;; is outlined by a `color` line whose width is given by `line-width`.
 ;;;
-;;; Note that this does not work perfectly for polygons with sharp
-;;; angels and thicker lines.
+;;; Note: Although the points in the polygon may not describe a shape
+;;; whose left edge is 0 and whose top edge is 0, `outlined-polygon` will
+;;; shift the polygon so that the left is 0 and the top is 0.
+;;;
+;;; Warning! The edges of the polygon should not cross. In such cases,
+;;; the results are unpredictable.
+;;;
+;;; Warning! Due to some infelicities in the design of `outlined-polygon`,
+;;; it does not always work correctly for non-convex polygons
 (define outlined-polygon
   (lambda (points
            color
