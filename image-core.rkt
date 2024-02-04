@@ -331,7 +331,8 @@
        (when (not (color? color-or-pen))
          (error name "requires a color, received ~a" color-or-pen))
        (solid color-or-pen)]
-      [(or (equal? mode "outline") (equal? mode 'outline))
+      [(member mode '("outline" outline "outlined" outlined))
+       ; (displayln (format "Creating an outlined ~a" name))
        (cond
          [(color? color-or-pen)
           (outlined color-or-pen 1)]
@@ -347,7 +348,9 @@
          (solid (rgb (rgb-red tmp)
                      (rgb-green tmp)
                      (rgb-blue tmp)
-                     (round (* 1/255 mode (rgb-alpha tmp))))))])))
+                     (round (* 1/255 mode (rgb-alpha tmp))))))]
+      [else
+       (error name "invalid mode: ~a" mode)])))
 
 ; +----------------+-------------------------------------------------
 ; | Generic images |
