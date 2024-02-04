@@ -178,18 +178,18 @@
 ; +----------------------+
 
 ; ax + b
-(struct linear (slope y-intercept) #:transparent)
+(struct line (slope y-intercept) #:transparent)
 
-;;; (linear-apply line x) -> real?
-;;;   line : linear?
+;;; (line-apply line x) -> real?
+;;;   line : line?
 ;;;   x : real?
-;;; Apply a linear function to an x value.
-(define linear-apply
+;;; Apply a line function to an x value.
+(define line-apply
   (lambda (line x)
-    (+ (* (linear-slope line) x)
-       (linear-y-intercept line))))
+    (+ (* (line-slope line) x)
+       (line-y-intercept line))))
 
-;;; (line-between pt1 pt2) -> (or linear? real?)
+;;; (line-between pt1 pt2) -> (or line? real?)
 ;;;   pt1 : point?
 ;;;   pt2 : point?
 ;;; Compute the function of the line between pt1 and pt2. Returns
@@ -202,46 +202,46 @@
           (pt-x pt1)
           (let* ([slope (/ voff hoff)]
                  [y-intercept (- (pt-y pt1) (* slope (pt-x pt1)))])
-            (linear slope y-intercept))))))
+            (line slope y-intercept))))))
 
-;;; (offset-line line distance updown) -> linear?
-;;;   line : (any-of linear? real?)
+;;; (offset-line l distance updown) -> line?
+;;;   l : (any-of line? real?)
 ;;;   distance : non-negative-real?
 ;;;   updown : one of 'up or 'down
 ;;; Offset the line up or down so that the distance between the two lines
 ;;; is distance.
 (define offset-line
-  (lambda (line distance updown)
+  (lambda (l distance updown)
     ; (println (list 'offset-line line distance updown))
     (let* ([mult (if (equal? updown 'up) -1 1)]
-           [a (linear-slope line)]
-           [b (linear-y-intercept line)])
+           [a (line-slope l)]
+           [b (line-y-intercept l)])
       ; Note: Computation is going from ax + 0 to ax + c
       (if (zero? a)
-          (linear a (+ b (* mult distance)))
+          (line a (+ b (* mult distance)))
           (let* ([inverse (/ -1 a)]
                  [x (/ distance (sqrt (+ 1 (sqr inverse))))]
                  [c (* x (+ inverse (- a)))])
-            (linear a (+ b (* mult (abs c)))))))))
+            (line a (+ b (* mult (abs c)))))))))
 
 (define offset-line-old
-  (lambda (line distance updown)
+  (lambda (l distance updown)
     (println (list 'offset-line line distance updown))
     (let* ([mult (if (equal? updown 'up) -1 1)]
-           [slope (linear-slope line)])
+           [slope (line-slope l)])
       (if (zero? slope)
-          (linear slope (+ (linear-y-intercept line) (* mult distance)))
+          (line slope (+ (line-y-intercept l) (* mult distance)))
           (let* ([inverse (/ -1 slope)]
                  [hoff (sqrt (/ (sqr distance)
                                 (+ 1 (sqr inverse))))]
                  [voff (abs (* inverse hoff))])
-            (linear slope
-                    (+ (linear-apply line hoff)
+            (line slope
+                    (+ (line-apply l hoff)
                        (* mult (abs voff)))))))))
 
 ;;; (intersection line1 line2) -> (any-of pt? false?)
-;;;   line1 : (any-of linear? real?)
-;;;   line2 : (any-of linear? real?)
+;;;   line1 : (any-of line? real?)
+;;;   line2 : (any-of line? real?)
 ;;; Find the point of intersection between `line1` and `line2`. Returns
 ;;; `#f` if they don't intercept. Lines represented as reals are vertical
 ;;; and the real number is the x intercept.
@@ -251,18 +251,18 @@
       [(and (real? line1) (real? line2))
        #f]
       [(real? line1)
-       (pt line1 (linear-apply line2 line1))]
+       (pt line1 (line-apply line2 line1))]
       [(real? line2)
-       (pt line2 (linear-apply line1 line2))]
-      [(equal? (linear-slope line1) (linear-slope line2))
+       (pt line2 (line-apply line1 line2))]
+      [(equal? (line-slope line1) (line-slope line2))
        #f]
       [else
-       (let ([x (/ (- (linear-y-intercept line2) (linear-y-intercept line1))
-                   (- (linear-slope line1) (linear-slope line2)))])
-         (pt x (linear-apply line1 x)))])))
+       (let ([x (/ (- (line-y-intercept line2) (line-y-intercept line1))
+                   (- (line-slope line1) (line-slope line2)))])
+         (pt x (line-apply line1 x)))])))
 
 ;;; (intersections lines) -> (list-of pt?)
-;;;   lines : (list-of (any-of linear? real?))
+;;;   lines : (list-of (any-of line? real?))
 ;;; Find the intersections between successive lines. If two lines are
 ;;; parallel, skips that intersection.
 (define intersections
@@ -275,7 +275,7 @@
                 (cons point (kernel (cdr remaining)))
                 (kernel (cdr remaining))))))))
 
-;;; (expanded-polygon-line pt1 pt2 distance) -> (any-of linear? real?)
+;;; (expanded-polygon-line pt1 pt2 distance) -> (any-of line? real?)
 ;;;   pt1 : point?
 ;;;   pt2 : point?
 ;;;   distance : positive-real?
@@ -314,7 +314,7 @@
       (let ([expanded-lines (lines (lastfirst points))])
         (intersections (lastfirst expanded-lines))))))
 
-;;; (polygon-lines points) -> (list-of linear?)
+;;; (polygon-lines points) -> (list-of line?)
 ;;;   points : list-of point?
 ;;; Determine the lines that bound a polygon
 (define polygon-lines
