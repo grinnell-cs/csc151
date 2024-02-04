@@ -10,18 +10,22 @@
 ;;; IMPORTANT: If you are going to edit this file (or any of the
 ;;; imported files), make sure that you've updated the DrRacket editor
 ;;; to treat `sstruct` like `struct`.
+;;;
+;;; IMPORTANT: In order to import this file as a file (rather than through
+;;; the csc151 library, you will likely need to require ssstruct and
+;;; cloneable and permit both cloneable and done. See below.
 
 (require racket/generic)
 (require lang/posn)
 
 (require "sstruct.rkt")
 (require "cloneable.rkt")
+(permit-cloneable)
+(permit-done)
+
 (require "type-predicates.rkt")
 
 (provide (all-defined-out))
-
-(permit-cloneable)
-(permit-done)
 
 ; +--------+---------------------------------------------------------
 ; | Points |
