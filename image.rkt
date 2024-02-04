@@ -13,14 +13,18 @@
 
 (require racket/generic)
 (require racket/include)
-(require lang/posn)
 
 (require (prefix-in 2htdp: 2htdp/image))
 
-(require "colors.rkt")
 (require "sstruct.rkt")
 (require "cloneable.rkt")
+(permit-cloneable)
+(permit-done)
+
 (require "type-predicates.rkt")
+
+(require "colors.rkt")
+(require "point.rkt")
 
 (provide (all-defined-out))
 
@@ -49,21 +53,6 @@
 ;;; sqrt-3 : real?
 ;;; The square root of three.
 (define sqrt-3 (sqrt 3))
-
-; +-------------+----------------------------------------------------
-; | Struct tags |
-; +-------------+
-
-(set-sstruct-tag! #:done 0
-                  (lambda (name)
-                    null))
-
-; Bleh. This is inelegant. It will have to suffice for now.
-(set-sstruct-tag! #:cloneable 0
-                  (lambda (name)
-                    `(#:methods gen:cloneable
-                      [(define clone
-                         (lambda (val) (struct-copy ,name val)))])))
 
 ; +------------+-----------------------------------------------------
 ; | Interfaces |
@@ -183,57 +172,6 @@
 ;;;   t : transformed?
 ;;; Determine if a transformed image preserved the underlying image.
 (define-generics preserved)
-
-; +--------+---------------------------------------------------------
-; | Points |
-; +--------+
-
-;;; (pt x y) -> pt?
-;;;   x : real?
-;;;   y : real?
-;;; Make a point.
-(sstruct pt (x y)
-  #:transparent
-  #:cloneable)
-
-;;; (distance pt1 pt2) -> real?
-;;;   pt1 : pt?
-;;;   pt2 : pt?
-;;; Find the distance between two points.
-(define distance
-  (lambda (pt1 pt2)
-    (magnitude (make-rectangular (- (pt-x pt1) (pt-x pt2))
-                                 (- (pt-y pt1) (pt-y pt2))))))
-
-(define distance-alt
-  (lambda (pt1 pt2)
-    (sqrt (+ (sqr (- (pt-x pt1) (pt-x pt2)))
-             (sqr (- (pt-y pt1) (pt-y pt2)))))))
-
-;;; (angle-between a b c) -> real?
-;;;   a : pt?
-;;;   b : pt?
-;;;   c : pt?
-;;; Determine the angle between the lines a-b and b-c
-(define angle-between-points
-  (let ([r2d (/ 180 pi)])
-    (lambda (a b c)
-      (let* ([v1 (angle (make-rectangular (- (pt-x b) (pt-x a))
-                                          (- (pt-y b) (pt-y a))))]
-             [v2 (angle (make-rectangular (- (pt-x c) (pt-x b))
-                                          (- (pt-y c) (pt-y b))))]
-             [ang (- v2 v1)]
-             [result (if (>= ang 0) ang (+ ang pi))])
-        (* r2d result)))))
-
-;;; (pt->posn pt) -> posn?
-;;;   pt : pt?
-;;; Convert a point to a position.
-;;;
-;;; (Ah, the joy of naming conventions.)
-(define pt->posn
-  (lambda (pt)
-    (make-posn (pt-x pt) (pt-y pt))))
 
 ; +----------------------+-------------------------------------------
 ; | Lines (mathematical) |
