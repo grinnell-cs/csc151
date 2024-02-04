@@ -3,3 +3,5 @@ compiled/
 
 # Temp files
 *~
+*.swp
+\#*
