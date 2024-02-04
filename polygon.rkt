@@ -27,6 +27,7 @@
 (require "point.rkt")
 (require "line.rkt")
 (require "image-core.rkt")
+(require (only-in "combinations.rkt" place))
 
 (provide (all-defined-out))
 
@@ -64,7 +65,9 @@
     (let ([sides (polygon-sides poly)]
           [points (polygon-points poly)])
       (when (>= n sides)
-        (error 'polygon-side "Expected a number between 0 (inclusive) and ~a (exclusive), received ~e" sides n))
+        (error 'polygon-side
+               "Expected a number between 0 (inclusive) and ~a (exclusive), received ~e"
+               sides n))
       (if (= n (- sides 1))
           (distance (car points) (list-ref points n))
           (distance (list-ref points n) (list-ref points (+ n 1)))))))
@@ -122,7 +125,7 @@
 ;;;   points : (list-of point?)
 ;;;   color : color?
 ;;;   description : string?
-;;; Create polygon whose vertices are given by `points` and whose 
+;;; Create polygon whose vertices are given by `points` and whose
 ;;; color is `color`.
 ;;;
 ;;; Warning! The edges of the polygon should not cross. In such cases,
@@ -243,7 +246,7 @@
               [height (apply max ycoords)])
          (displayln (format "left: ~a, top: ~a, width: ~a, height: ~a"
                             left top width height))
-         (2htdp:place-image/align 
+         (2htdp:place-image/align
           (2htdp:polygon (map pt->posn (polygon-points img))
                          "solid"
                          (color->2htdp (image-color img)))
@@ -268,7 +271,7 @@
 ;;;   description : string?
 ;;; Create a polygon from the specified points. Unlike `solid-polygon`,
 ;;; `solid-coordinate-polygon` does not shift the polygon. Hence, if
-;;; coordinates are negative, portions of the polygon may be cut off. 
+;;; coordinates are negative, portions of the polygon may be cut off.
 ;;; Similarly, if coordinates are all positive, there may be some
 ;;; blank space to the left of the polygon.
 (define solid-coordinate-polygon
@@ -385,6 +388,80 @@
         [else
          (cons (line-between (car remaining) (cadr remaining))
                (kernel (cdr remaining)))]))))
+
+; +---------------------+--------------------------------------------
+; | Connecting the dots |
+; +---------------------+
+
+;;; (add-lines points line-color img) -> 2htdp:image?
+;;;   points : (list-of pt?)
+;;;   line-color : 2htdp:color?
+;;;   img : 2htdp:image?
+;;; Add the lines between the specified points to the images.
+(define add-lines
+  (lambda (points line-color img)
+    (param-check! add-lines 1 (list-of pt?) points)
+    (param-check! add-lines 2 2htdp:color? line-color)
+    (param-check! add-lines 3 2htdp:image? img)
+    (add-lines/kernel points line-color img)))
+
+(define add-lines/kernel
+  (lambda (points line-color img)
+    (let kernel ([img img]
+                 [points points])
+      (if (null? (cdr points))
+          img
+          (let ([pt1 (car points)]
+                [pt2 (cadr points)])
+            (kernel (2htdp:scene+line img
+                                      (pt-x pt1) (pt-y pt1)
+                                      (pt-x pt2) (pt-y pt2)
+                                      line-color)
+                    (cdr points)))))))
+
+;;; (place-dots dot points img) -> 2htdp:image?
+;;;   dot : 2htdp:image?
+;;;   points : (list-of pt?)
+;;;   img : 2htdp:image?
+;;; Place a copy of `dot` at each point in `points` in `img`.
+(define place-dots
+  (lambda (dot points img)
+    (param-check! place-dots 1 2htdp:image? dot)
+    (param-check! place-dots 2 (list-of pt?) points)
+    (param-check! place-dots 3 2htdp:image? img)
+    (let kernel ([img img]
+                 [points points])
+      (if (null? points)
+          img
+          (kernel (2htdp:place-image dot
+                                     (pt-x (car points))
+                                     (pt-y (car points))
+                                     img)
+                  (cdr points))))))
+
+;;; (connect-the-dots points line-color dot-color [description]) -> image?
+;;;   points : (list-of pt?)
+;;;   line-color : color?
+;;;   dot-color : color?
+;;;   description : string?
+;;; Make an image by drawing lines between the points and then
+;;; putting small dots at each point.
+(define connect-the-dots
+  (let ([dot-size 6])
+    (lambda (points line-color dot-color [description #f])
+      (param-check! connect-the-dots 1 (list-of pt?) points)
+      (param-check! connect-the-dots 2 color? line-color)
+      (param-check! connect-the-dots 3 color? dot-color)
+      (when description
+        (param-check! connect-the-dots 4 string? description))
+      (let* ([dot (2htdp:circle dot-size "solid" (color->2htdp dot-color))]
+             [width (+ dot-size (apply max (map pt-x points)))]
+             [height (+ dot-size (apply max (map pt-y points)))]
+             [bg (2htdp:rectangle width height "solid" (2htdp:color 0 0 0 0))])
+        (place-dots dot points
+                    (add-lines (lastfirst points)
+                               (color->2htdp line-color)
+                               bg))))))
 
 ; +----------------+-------------------------------------------------
 ; | Misc utilities |
