@@ -48,8 +48,11 @@
 ; | The #:cloneable tag |
 ; +---------------------+
 
-(set-sstruct-tag! #:cloneable 0
-                  (lambda (name)
-                    `(#:methods gen:cloneable
-                      [(define clone
-                         (lambda (val) (struct-copy ,name val)))])))
+;;; (permit-cloneable) -> (void)
+;;; Permit the "cloneable" tag.
+(define-syntax-rule (permit-cloneable)
+  (set-sstruct-tag! #:cloneable 0
+                    (lambda (name)
+                      `(#:methods gen:cloneable
+                        [(define clone
+                           (lambda (val) (struct-copy ,name val)))]))))

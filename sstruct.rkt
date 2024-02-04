@@ -71,3 +71,14 @@
      ; sstruct-tags
      (lambda (stx)
        (datum->syntax stx tags)))))
+
+; +----------------+-------------------------------------------------
+; | The #:done tag |
+; +----------------+
+
+;;; (permit-done) -> (void)
+;;; Permit the "#:done" tag.
+(define-syntax-rule (permit-done)
+  (set-sstruct-tag! #:done 0
+                  (lambda (name)
+                    null)))
