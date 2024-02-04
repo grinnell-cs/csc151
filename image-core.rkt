@@ -676,6 +676,45 @@
              (image-width img)
              (image-height img))))
 
+; +------------------------------+-----------------------------------
+; | Additional bitmap operations |
+; +------------------------------+
+
+;;; (image-compute pos2color width height description) -> image?
+;;;   pos2color : procedure?
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   description : string?
+;;; Creates a new `width`-by-`height` bitmap by applying `pos2color` to
+;;; each (col,row) coordinate to determine the color at that position.
+;;;
+;;; (pos2color col row) -> rgb?
+;;;   col : non-negative-integer?
+;;;   row : non-negative-integer?
+;;; Compute a color from (col,row)
+(define image-compute
+  (lambda (pos2color width height description)
+    (param-check! image-compute 1 procedure? pos2color)
+    (param-check! image-compute 2 positive-integer? width)
+    (param-check! image-compute 3 positive-integer? height)
+    (param-check! image-compute 4 string? description)
+    (let ([pixels (make-vector (* width height))])
+      (let kernel ([pos 0]
+                   [col 0]
+                   [row 0])
+        (cond
+          [(>= col width)
+           (kernel pos 0 (+ row 1))]
+          [(< row height)
+           (vector-set! pixels pos (pos2color col row))
+           (kernel (+ pos 1) (+ col 1) row )]))
+      (%bitmap description
+               #f
+               pixels
+               #f
+               width
+               height))))
+
 ; +--------+---------------------------------------------------------
 ; | Shapes |
 ; +--------+
