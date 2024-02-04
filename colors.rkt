@@ -1,7 +1,4 @@
 #lang racket
-(require (prefix-in 2htdp: 2htdp/image))
-(require (except-in racket/draw make-color make-pen))
-(require "type-predicates.rkt")
 
 ;;; File:
 ;;;   colors.rkt
@@ -9,6 +6,10 @@
 ;;;   Samuel A. Rebelsky
 ;;; Summary:
 ;;;   Some simple utilities for dealing with colors.
+
+(require (prefix-in 2htdp: 2htdp/image))
+(require (except-in racket/draw make-color make-pen))
+(require "type-predicates.rkt")
 
 (provide (all-defined-out))
 
@@ -49,6 +50,13 @@
 (struct rgba (red green blue alpha) 
   #:transparent
   #:reflection-name 'rgb
+  #:methods gen:custom-write
+  [(define write-proc
+     (lambda (val port mode)
+       (write (2htdp:square 16 "solid"
+                            (2htdp:color (rgb-red val) (rgb-green val)
+                                         (rgb-blue val) (rgb-alpha val)))
+              port)))]
   #:guard
   (lambda (red green blue alpha type-name)
     (let ([r (->rgba-component red)]
