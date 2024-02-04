@@ -6,10 +6,17 @@
 ;;;   A variety of procedures for working with images.
 ;;; Author:
 ;;;   Samuel A. Rebelsky
+;;;
+;;; IMPORTANT: If you are going to edit this file (or any of the
+;;; imported files), make sure that you've updated the DrRacket editor
+;;; to treat `sstruct` like `struct`.
 
 (require racket/generic)
-(require (prefix-in 2htdp: 2htdp/image))
+(require racket/include)
 (require lang/posn)
+
+(require (prefix-in 2htdp: 2htdp/image))
+
 (require "colors.rkt")
 (require "sstruct.rkt")
 (require "cloneable.rkt")
