@@ -186,8 +186,8 @@
 ;;;   y : real?
 ;;; Make a point.
 (sstruct pt (x y)
-         #:transparent
-         #:cloneable)
+  #:transparent
+  #:cloneable)
 
 ;;; (distance pt1 pt2) -> real?
 ;;;   pt1 : pt?
@@ -579,30 +579,30 @@
 ;;;   picture : 2htdp:image?
 ;;; Our generic image.
 (sstruct %image
-         ([desc #:mutable]
-          [stru #:mutable]
-          [bits #:mutable]
-          [pict #:mutable])
-         #:transparent
-         #:cloneable
-         #:methods gen:img-make-pict []
-         #:methods gen:img-make-bits []
-         #:methods gen:img-make-stru []
-         #:methods gen:img-make-desc []
-         #:methods gen:img-color []
-         #:methods gen:img-fname []
-         #:methods gen:img-line-width []
-         #:methods gen:img-recolor []
-         #:methods gen:img-subimages []
-         #:methods gen:custom-write
-         [(define write-proc
-            (lambda (img port mode)
-              ; (displayln (list 'write-proc 'img port mode))
-              (when (markdown-dir)
-                (when (not (equal? (format "~a" port) "#<output-port:null>"))
-                  (markdown-image img)))
-              (write (image-picture img) port)))]
-         #:done)
+  ([desc #:mutable]
+   [stru #:mutable]
+   [bits #:mutable]
+   [pict #:mutable])
+  #:transparent
+  #:cloneable
+  #:methods gen:img-make-pict []
+  #:methods gen:img-make-bits []
+  #:methods gen:img-make-stru []
+  #:methods gen:img-make-desc []
+  #:methods gen:img-color []
+  #:methods gen:img-fname []
+  #:methods gen:img-line-width []
+  #:methods gen:img-recolor []
+  #:methods gen:img-subimages []
+  #:methods gen:custom-write
+  [(define write-proc
+     (lambda (img port mode)
+       ; (displayln (list 'write-proc 'img port mode))
+       (when (markdown-dir)
+         (when (not (equal? (format "~a" port) "#<output-port:null>"))
+           (markdown-image img)))
+       (write (image-picture img) port)))]
+  #:done)
 
 (define image
   (lambda ([desc "an image"] [stru #f] [bits #f] [pict #f])
@@ -736,21 +736,21 @@
 ; +--------------+
 
 (sstruct %basic-image %image ([color #:mutable])
-         #:transparent
-         #:reflection-name 'basic-image
-         #:cloneable
-         #:methods gen:img-color
-         [(define .image-color
-            (lambda (img)
-              (%basic-image-color img)))]
-         #:methods gen:img-recolor
-         [(define .image-recolor
-            (lambda (img color)
-              (let ([result (clone img)])
-                (image-clear-fields! result)
-                (set-%basic-image-color! result color)
-                result)))]
-         #:done)
+  #:transparent
+  #:reflection-name 'basic-image
+  #:cloneable
+  #:methods gen:img-color
+  [(define .image-color
+     (lambda (img)
+       (%basic-image-color img)))]
+  #:methods gen:img-recolor
+  [(define .image-recolor
+     (lambda (img color)
+       (let ([result (clone img)])
+         (image-clear-fields! result)
+         (set-%basic-image-color! result color)
+         result)))]
+  #:done)
 
 ;;; (basic-image? val) -> boolean?
 ;;;   val : any?
@@ -856,31 +856,31 @@
          (polygon-point (cdr points) (- i 1))]))))
 
 (sstruct %solid-polygon %polygon ()
-         #:cloneable
-         #:methods gen:solid []
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (make-image-fname dir
-                                (format "solid-~a-polygon-"
-                                        (color->color-name (image-color img))))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a polygon built from the points ~e"
-                      (color->color-name (image-color img))
-                      (polygon-points img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:polygon (map pt->posn (polygon-points img))
-                             "solid"
-                             (color->2htdp (image-color img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-polygon (polygon-points img) (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:solid []
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (make-image-fname dir
+                         (format "solid-~a-polygon-"
+                                 (color->color-name (image-color img))))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a polygon built from the points ~e"
+               (color->color-name (image-color img))
+               (polygon-points img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:polygon (map pt->posn (polygon-points img))
+                      "solid"
+                      (color->2htdp (image-color img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-polygon (polygon-points img) (image-color img))))]
+  #:done)
 
 (define solid-polygon? %solid-polygon?)
 
@@ -894,59 +894,56 @@
 ;;; Warning! The edges of the polygon should not cross. In such cases,
 ;;; the results are unpredictable.
 (define solid-polygon
-  (lambda (points
-           color
-           [description #f])
+  (lambda (points color [description #f])
+    (param-check! solid-polygon 1 (list-of pt?) points)
+    (param-check! solid-polygon 2 color? color)
+    (when description
+      (param-check! solid-polygon 3 string? description))
     (let ([color (color->rgb color)])
-      (%solid-polygon description
-                      #f
-                      #f
-                      #f
-                      color
-                      points))))
+      (%solid-polygon description #f #f #f color points))))
 
 (sstruct %outlined-polygon %polygon (line-width)
-         #:cloneable
-         #:mutable
-         #:methods gen:outlined []
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (make-image-fname dir
-                                (format "outlined~a-~a-polygon-"
-                                        (color->color-name (image-color img))
-                                        (line-width img)))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a polygon built from the points ~e"
-                      (color->color-name (image-color img))
-                      (polygon-points img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (let* ([lw (line-width img)]
-                     [points (polygon-points img)]
-                     [newpoints (append (reverse (lastfirst (expand-polygon points lw)))
-                                        (lastfirst points))]
-                     [tmp (2htdp:polygon (map pt->posn newpoints)
-                                         "solid"
-                                         (color->2htdp (image-color img)))])
-                tmp)))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-polygon
-                    (polygon-points img)
-                    (image-color img)
-                    (line-width img))))]
-         #:methods gen:img-line-width
-         [(define line-width
-            (lambda (img)
-              (min 255
-                   (max 0
-                        (round (%outlined-polygon-line-width img))))))]
-         #:done)
+  #:cloneable
+  #:mutable
+  #:methods gen:outlined []
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (make-image-fname dir
+                         (format "outlined~a-~a-polygon-"
+                                 (color->color-name (image-color img))
+                                 (line-width img)))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a polygon built from the points ~e"
+               (color->color-name (image-color img))
+               (polygon-points img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let* ([lw (line-width img)]
+              [points (polygon-points img)]
+              [newpoints (append (reverse (lastfirst (expand-polygon points lw)))
+                                 (lastfirst points))]
+              [tmp (2htdp:polygon (map pt->posn newpoints)
+                                  "solid"
+                                  (color->2htdp (image-color img)))])
+         tmp)))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-polygon
+             (polygon-points img)
+             (image-color img)
+             (line-width img))))]
+  #:methods gen:img-line-width
+  [(define line-width
+     (lambda (img)
+       (min 255
+            (max 0
+                 (round (%outlined-polygon-line-width img))))))]
+  #:done)
 
 (define outlined-polygon? %outlined-polygon?)
 
@@ -981,6 +978,65 @@
                          points
                          line-width))))
 
+(sstruct %solid-coordinate-polygon %polygon ()
+  #:cloneable
+  #:methods gen:solid []
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (make-image-fname dir
+                         (format "solid-~a-polygon-"
+                                 (color->color-name (image-color img))))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a polygon built from the points ~e"
+               (color->color-name (image-color img))
+               (polygon-points img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let* ([points (polygon-points img)]
+              [xcoords (map pt-x points)]
+              [ycoords (map pt-y points)]
+              [left (apply min xcoords)]
+              [top (apply min ycoords)]
+              [width (apply max xcoords)]
+              [height (apply max ycoords)])
+         (displayln (format "left: ~a, top: ~a, width: ~a, height: ~a"
+                            left top width height))
+         (2htdp:place-image/align 
+          (2htdp:polygon (map pt->posn (polygon-points img))
+                         "solid"
+                         (color->2htdp (image-color img)))
+          left top
+          "left" "top"
+          (transparent-rectangle width height)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-coordinate-polygon (polygon-points img) (image-color img))))]
+  #:done)
+
+(define solid-coordinate-polygon? %solid-coordinate-polygon?)
+
+;;; (solid-coordinate-polygon points color [description]) -> image?
+;;;   points : list-of (pt?)
+;;;   color : color?
+;;;   description : string?
+;;; Create a polygon from the specified points. Unlike `solid-polygon`,
+;;; `solid-coordinate-polygon` does not shift the polygon. Hence, if
+;;; coordinates are negative, portions of the polygon may be cut off. 
+;;; Similarly, if coordinates are all positive, there may be some
+;;; blank space to the left of the polygon.
+(define solid-coordinate-polygon
+  (lambda (points color [description #f])
+    (param-check! solid-coordinate-polygon 1 (list-of pt?) points)
+    (param-check! solid-coordinate-polygon 2 color? color)
+    (when description
+      (param-check! solid-coordinate-polygon 3 string? description))
+    (let ([color (color->rgb color)])
+      (%solid-coordinate-polygon description #f #f #f color points))))
 
 ;;; (polygon points mode color-or-pen [description]) -> image?
 ;;;   points : (list-of pt?)
@@ -1033,36 +1089,36 @@
 ; +------------+
 
 (sstruct %solid-rectangle %solid-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-~ax~a-rectangle.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (rectangle-width img)
-                      (rectangle-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a ~a-by-~a rectangle"
-                      (color->color-name (image-color img))
-                      (rectangle-width img)
-                      (rectangle-height img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:polygon (map pt->posn (polygon-points img))
-                             "solid"
-                             (color->2htdp (image-color img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-rectangle
-                    (rectangle-width img)
-                    (rectangle-height img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-~ax~a-rectangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (rectangle-width img)
+               (rectangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a ~a-by-~a rectangle"
+               (color->color-name (image-color img))
+               (rectangle-width img)
+               (rectangle-height img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:polygon (map pt->posn (polygon-points img))
+                      "solid"
+                      (color->2htdp (image-color img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-rectangle
+             (rectangle-width img)
+             (rectangle-height img)
+             (image-color img))))]
+  #:done)
 
 (define solid-rectangle? %solid-rectangle?)
 (define solid-rectangle-width  %solid-rectangle-width)
@@ -1091,48 +1147,48 @@
                         height))))
 
 (sstruct %outlined-rectangle %outlined-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-~ax~a-rectangle.png"
-                      (or dir ".")
-                      (line-width img)
-                      (color->color-name (image-color img))
-                      (rectangle-width img)
-                      (rectangle-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a ~a-by-~a rectangle outlined with a width-~a ~a line"
-                      (rectangle-width img)
-                      (rectangle-height img)
-                      (line-width img)
-                      (color->color-name (image-color img)))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (let ([lw (line-width img)])
-                (2htdp:overlay (2htdp:rectangle (+ (rectangle-width img) lw)
-                                                (+ (rectangle-height img) lw)
-                                                "outline"
-                                                (2htdp:pen (color->2htdp (image-color img))
-                                                           lw
-                                                           "solid"
-                                                           "round"
-                                                           "miter"))
-                               (2htdp:rectangle (+ (rectangle-width img) lw lw)
-                                                (+ (rectangle-height img) lw lw)
-                                                "solid"
-                                                (2htdp:color 0 0 0 0))))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-rectangle
-                    (rectangle-width img)
-                    (rectangle-height img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-~ax~a-rectangle.png"
+               (or dir ".")
+               (line-width img)
+               (color->color-name (image-color img))
+               (rectangle-width img)
+               (rectangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a ~a-by-~a rectangle outlined with a width-~a ~a line"
+               (rectangle-width img)
+               (rectangle-height img)
+               (line-width img)
+               (color->color-name (image-color img)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let ([lw (line-width img)])
+         (2htdp:overlay (2htdp:rectangle (+ (rectangle-width img) lw)
+                                         (+ (rectangle-height img) lw)
+                                         "outline"
+                                         (2htdp:pen (color->2htdp (image-color img))
+                                                    lw
+                                                    "solid"
+                                                    "round"
+                                                    "miter"))
+                        (2htdp:rectangle (+ (rectangle-width img) lw lw)
+                                         (+ (rectangle-height img) lw lw)
+                                         "solid"
+                                         (2htdp:color 0 0 0 0))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-rectangle
+             (rectangle-width img)
+             (rectangle-height img)
+             (image-color img))))]
+  #:done)
 
 (define outlined-rectangle? %outlined-rectangle?)
 (define outlined-rectangle-width  %outlined-rectangle-width)
@@ -1259,25 +1315,25 @@
 ; +---------+
 
 (sstruct %solid-square %solid-rectangle ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-square-~a.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (square-side img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a square with side length ~a"
-                      (color->color-name (image-color img))
-                      (image-width img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-square (rectangle-width img) (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-square-~a.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (square-side img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a square with side length ~a"
+               (color->color-name (image-color img))
+               (image-width img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-square (rectangle-width img) (image-color img))))]
+  #:done)
 
 (define solid-square? %solid-square?)
 
@@ -1300,26 +1356,26 @@
                      side))))
 
 (sstruct %outlined-square %outlined-rectangle ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-square-~a.png"
-                      (or dir ".")
-                      (line-width img)
-                      (color->color-name (image-color img))
-                      (square-side img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a square with side length ~a"
-                      (color->color-name (image-color img))
-                      (image-width img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-square (rectangle-width img) (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-square-~a.png"
+               (or dir ".")
+               (line-width img)
+               (color->color-name (image-color img))
+               (square-side img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a square with side length ~a"
+               (color->color-name (image-color img))
+               (image-width img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-square (rectangle-width img) (image-color img))))]
+  #:done)
 
 (define outlined-square? %outlined-square?)
 
@@ -1384,30 +1440,30 @@
 ; +----------+
 
 (sstruct %solid-diamond %solid-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-~ax~a-diamond.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (diamond-width img)
-                      (diamond-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a ~a-by-~a diamond"
-                      (color->color-name (image-color img))
-                      (diamond-width img)
-                      (diamond-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-diamond
-                    (diamond-width img)
-                    (diamond-height img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-~ax~a-diamond.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (diamond-width img)
+               (diamond-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a ~a-by-~a diamond"
+               (color->color-name (image-color img))
+               (diamond-width img)
+               (diamond-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-diamond
+             (diamond-width img)
+             (diamond-height img)
+             (image-color img))))]
+  #:done)
 
 (define solid-diamond? %solid-diamond?)
 (define solid-diamond-width  %solid-diamond-width)
@@ -1444,32 +1500,32 @@
                     height)))
 
 (sstruct %outlined-diamond %outlined-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-~ax~a-diamond.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (line-width img)
-                      (diamond-width img)
-                      (diamond-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a ~a-by-~a diamond"
-                      (color->color-name (image-color img))
-                      (diamond-width img)
-                      (diamond-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-diamond
-                    (diamond-width img)
-                    (diamond-height img)
-                    (image-color img)
-                    (line-width img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-~ax~a-diamond.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (line-width img)
+               (diamond-width img)
+               (diamond-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a ~a-by-~a diamond"
+               (color->color-name (image-color img))
+               (diamond-width img)
+               (diamond-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-diamond
+             (diamond-width img)
+             (diamond-height img)
+             (image-color img)
+             (line-width img))))]
+  #:done)
 
 (define outlined-diamond? %outlined-diamond?)
 (define outlined-diamond-width %outlined-diamond-width)
@@ -1579,30 +1635,30 @@
 ; +---------------------+
 
 (sstruct %solid-isosceles-triangle %solid-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-~ax~a-isosceles-triangle.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (isosceles-triangle-width img)
-                      (isosceles-triangle-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a ~a-by-~a isosceles triangle"
-                      (color->color-name (image-color img))
-                      (isosceles-triangle-width img)
-                      (isosceles-triangle-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-isosceles-triangle
-                    (isosceles-triangle-width img)
-                    (isosceles-triangle-height img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-~ax~a-isosceles-triangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (isosceles-triangle-width img)
+               (isosceles-triangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a ~a-by-~a isosceles triangle"
+               (color->color-name (image-color img))
+               (isosceles-triangle-width img)
+               (isosceles-triangle-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-isosceles-triangle
+             (isosceles-triangle-width img)
+             (isosceles-triangle-height img)
+             (image-color img))))]
+  #:done)
 
 (define solid-isosceles-triangle? %solid-isosceles-triangle?)
 (define solid-isosceles-triangle-width  %solid-isosceles-triangle-width)
@@ -1638,32 +1694,32 @@
                                height)))
 
 (sstruct %outlined-isosceles-triangle %outlined-polygon (width height)
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-~ax~a-isosceles-triangle.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (line-width img)
-                      (isosceles-triangle-width img)
-                      (isosceles-triangle-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a ~a-by-~a isosceles-triangle"
-                      (color->color-name (image-color img))
-                      (isosceles-triangle-width img)
-                      (isosceles-triangle-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-isosceles-triangle
-                    (isosceles-triangle-width img)
-                    (isosceles-triangle-height img)
-                    (image-color img)
-                    (line-width img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-~ax~a-isosceles-triangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (line-width img)
+               (isosceles-triangle-width img)
+               (isosceles-triangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a ~a-by-~a isosceles-triangle"
+               (color->color-name (image-color img))
+               (isosceles-triangle-width img)
+               (isosceles-triangle-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-isosceles-triangle
+             (isosceles-triangle-width img)
+             (isosceles-triangle-height img)
+             (image-color img)
+             (line-width img))))]
+  #:done)
 
 (define outlined-isosceles-triangle? %outlined-isosceles-triangle?)
 (define outlined-isosceles-triangle-width %outlined-isosceles-triangle-width)
@@ -1765,27 +1821,27 @@
 ; +-----------------------+
 
 (sstruct %solid-equilateral-triangle %solid-isosceles-triangle ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-~a-equilateral-triangle.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (equilateral-triangle-edge img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a equilateral triangle with edge length ~a"
-                      (color->color-name (image-color img))
-                      (equilateral-triangle-edge img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-equilateral-triangle
-                    (equilateral-triangle-edge img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-~a-equilateral-triangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (equilateral-triangle-edge img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a equilateral triangle with edge length ~a"
+               (color->color-name (image-color img))
+               (equilateral-triangle-edge img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-equilateral-triangle
+             (equilateral-triangle-edge img)
+             (image-color img))))]
+  #:done)
 
 ;;; (solid-equilateral-triangle? val) -> boolean?
 ;;;   val : any?
@@ -1811,29 +1867,29 @@
                                    height))))
 
 (sstruct %outlined-equilateral-triangle %outlined-isosceles-triangle ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-~a-equilateral-triangle.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (line-width img)
-                      (equilateral-triangle-edge img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a equilateral-triangle with edge-length ~a"
-                      (color->color-name (image-color img))
-                      (equilateral-triangle-edge img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-equilateral-triangle
-                    (equilateral-triangle-edge img)
-                    (image-color img)
-                    (line-width img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-~a-equilateral-triangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (line-width img)
+               (equilateral-triangle-edge img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a equilateral-triangle with edge-length ~a"
+               (color->color-name (image-color img))
+               (equilateral-triangle-edge img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-equilateral-triangle
+             (equilateral-triangle-edge img)
+             (image-color img)
+             (line-width img))))]
+  #:done)
 
 ;;; (outlined-equilateral-triangle? val) -> boolean?
 ;;;   val : any?
@@ -1914,41 +1970,41 @@
 ; +----------+
 
 (sstruct %ellipse %shape (width height)
-         #:cloneable)
+  #:cloneable)
 
 (sstruct %solid-ellipse %ellipse ()
-         #:cloneable
-         #:methods gen:solid []
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-ellipse-~ax~a.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (image-width img)
-                      (image-height img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a ~a-by-~a ellipse"
-                      (color->color-name (image-color img))
-                      (ellipse-width img)
-                      (ellipse-height img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:ellipse (ellipse-width img)
-                             (ellipse-height img)
-                             "solid"
-                             (color->2htdp (image-color img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-ellipse
-                    (ellipse-width img)
-                    (ellipse-height img)
-                    (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:solid []
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-ellipse-~ax~a.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (image-width img)
+               (image-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a ~a-by-~a ellipse"
+               (color->color-name (image-color img))
+               (ellipse-width img)
+               (ellipse-height img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:ellipse (ellipse-width img)
+                      (ellipse-height img)
+                      "solid"
+                      (color->2htdp (image-color img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-ellipse
+             (ellipse-width img)
+             (ellipse-height img)
+             (image-color img))))]
+  #:done)
 
 (define solid-ellipse? %solid-ellipse?)
 (define solid-ellipse-width %ellipse-width)
@@ -1975,44 +2031,44 @@
                       height))))
 
 (sstruct %outlined-ellipse %ellipse (line-width)
-         #:cloneable
-         #:methods gen:outlined []
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a ~a-by-~a ellipse"
-                      (color->color-name (image-color img))
-                      (ellipse-width img)
-                      (ellipse-height img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (let* ([lw (line-width img)]
-                     [tmp (2htdp:ellipse (+ (ellipse-width img) lw)
-                                         (+ (ellipse-height img) lw)
-                                         "outline"
-                                         (2htdp:pen (color->2htdp (image-color img))
-                                                    lw
-                                                    "solid"
-                                                    "round"
-                                                    "miter"))])
-                (2htdp:overlay tmp
-                               (transparent-rectangle (+ (ellipse-width img) lw lw)
-                                                      (+ (ellipse-height img) lw lw))))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-ellipse
-                    (ellipse-width img)
-                    (ellipse-height img)
-                    (image-color img))))]
-         #:methods gen:img-line-width
-         [(define line-width
-            (lambda (img)
-              (max 0
-                   (min 255
-                        (round (%outlined-ellipse-line-width img))))))]
-         #:done)
+  #:cloneable
+  #:methods gen:outlined []
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a ~a-by-~a ellipse"
+               (color->color-name (image-color img))
+               (ellipse-width img)
+               (ellipse-height img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let* ([lw (line-width img)]
+              [tmp (2htdp:ellipse (+ (ellipse-width img) lw)
+                                  (+ (ellipse-height img) lw)
+                                  "outline"
+                                  (2htdp:pen (color->2htdp (image-color img))
+                                             lw
+                                             "solid"
+                                             "round"
+                                             "miter"))])
+         (2htdp:overlay tmp
+                        (transparent-rectangle (+ (ellipse-width img) lw lw)
+                                               (+ (ellipse-height img) lw lw))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-ellipse
+             (ellipse-width img)
+             (ellipse-height img)
+             (image-color img))))]
+  #:methods gen:img-line-width
+  [(define line-width
+     (lambda (img)
+       (max 0
+            (min 255
+                 (round (%outlined-ellipse-line-width img))))))]
+  #:done)
 
 (define outlined-ellipse? %outlined-ellipse?)
 (define outlined-ellipse-width %ellipse-width)
@@ -2102,32 +2158,32 @@
 ; +---------+
 
 (sstruct %solid-circle %solid-ellipse ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/solid-~a-circle-~a.png"
-                      (or dir ".")
-                      (color->color-name (image-color img))
-                      (circle-diameter img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "a solid ~a circle with diameter ~a"
-                      (color->color-name (image-color img))
-                      (ellipse-width img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:ellipse (ellipse-width img)
-                             (ellipse-height img)
-                             "solid"
-                             (color->2htdp (image-color img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'solid-circle (ellipse-width img) (image-color img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-circle-~a.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (circle-diameter img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a circle with diameter ~a"
+               (color->color-name (image-color img))
+               (ellipse-width img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:ellipse (ellipse-width img)
+                      (ellipse-height img)
+                      "solid"
+                      (color->2htdp (image-color img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-circle (ellipse-width img) (image-color img))))]
+  #:done)
 
 (define solid-circle? %solid-circle?)
 
@@ -2147,29 +2203,29 @@
                    diam)))
 
 (sstruct %outlined-circle %outlined-ellipse ()
-         #:cloneable
-         #:methods gen:img-fname
-         [(define .image-fname
-            (lambda (img dir)
-              (format "~a/outlined-~a-~a-circle-~a.png"
-                      (or dir ".")
-                      (line-width img)
-                      (color->color-name (image-color img))
-                      (circle-diameter img))))]
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "an outlined ~a circle with diameter ~a"
-                      (color->color-name (image-color img))
-                      (ellipse-width img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'outlined-circle
-                    (ellipse-width img)
-                    (image-color img)
-                    (line-width img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-circle-~a.png"
+               (or dir ".")
+               (line-width img)
+               (color->color-name (image-color img))
+               (circle-diameter img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a circle with diameter ~a"
+               (color->color-name (image-color img))
+               (ellipse-width img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-circle
+             (ellipse-width img)
+             (image-color img)
+             (line-width img))))]
+  #:done)
 
 (define outlined-circle? %outlined-circle?)
 
@@ -2231,24 +2287,24 @@
 ; +---------+
 
 (sstruct %bitmap %image (width height)
-         #:transparent
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              "a bitmap"))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:color-list->bitmap (map rgb->2htdp
-                                             (vector->list (image-bitmap img)))
-                                        (image-width img)
-                                        (image-height img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'bitmap (image-width img) (image-height img))))]
-         #:done)
+  #:transparent
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       "a bitmap"))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:color-list->bitmap (map rgb->2htdp
+                                      (vector->list (image-bitmap img)))
+                                 (image-width img)
+                                 (image-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'bitmap (image-width img) (image-height img))))]
+  #:done)
 
 (define bitmap? %bitmap?)
 (define bitmap-width %bitmap-width)
@@ -2381,26 +2437,26 @@
 ; +-----------------+
 
 (sstruct %transformed %image ([img #:mutable])
-         #:transparent
-         #:cloneable
-         #:methods gen:img-subimages
-         [(define subimages
-            (lambda (img)
-              (list (%transformed-img img))))]
-         #:methods gen:img-color
-         [(define .image-color
-            (lambda (img)
-              (image-color (%transformed-img img))))]
-         #:methods gen:img-recolor
-         [(define .image-recolor
-            (lambda (img color)
-              (let ([result (clone img)])
-                (image-clear-fields! result)
-                (set-%transformed-img! result
-                                       (image-recolor (%transformed-img img)
-                                                      color))
-                result)))]
-         #:done)
+  #:transparent
+  #:cloneable
+  #:methods gen:img-subimages
+  [(define subimages
+     (lambda (img)
+       (list (%transformed-img img))))]
+  #:methods gen:img-color
+  [(define .image-color
+     (lambda (img)
+       (image-color (%transformed-img img))))]
+  #:methods gen:img-recolor
+  [(define .image-recolor
+     (lambda (img color)
+       (let ([result (clone img)])
+         (image-clear-fields! result)
+         (set-%transformed-img! result
+                                (image-recolor (%transformed-img img)
+                                               color))
+         result)))]
+  #:done)
 
 
 ;;; (transformed-image? val) -> boolean?
@@ -2433,26 +2489,26 @@
 ; +----------------------------------+
 
 (sstruct %rotated %transformed (angle)
-         #:cloneable
-         #:methods gen:preserved []
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "~a, rotated by ~a degrees"
-                      (image-description (subimage img))
-                      (rotated-angle img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:rotate (rotated-angle img)
-                            (image-picture (subimage img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'rotate
-                    (image-structure (subimage img))
-                    (rotated-angle img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:preserved []
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "~a, rotated by ~a degrees"
+               (image-description (subimage img))
+               (rotated-angle img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:rotate (rotated-angle img)
+                     (image-picture (subimage img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'rotate
+             (image-structure (subimage img))
+             (rotated-angle img))))]
+  #:done)
 
 (define rotated? %rotated?)
 
@@ -2489,8 +2545,8 @@
               angle)))
 
 (sstruct %flipped %transformed ()
-         #:methods gen:preserved []
-         #:cloneable)
+  #:methods gen:preserved []
+  #:cloneable)
 
 ;;; (flipped? img) -> boolean?
 ;;;   img : image?
@@ -2498,21 +2554,21 @@
 (define flipped? %flipped?)
 
 (sstruct %hflipped %flipped ()
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "~a, flipped horizontally"
-                      (image-description (subimage img)))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:flip-horizontal (image-picture (subimage img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'hflip (image-structure (subimage img)))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "~a, flipped horizontally"
+               (image-description (subimage img)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:flip-horizontal (image-picture (subimage img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'hflip (image-structure (subimage img)))))]
+  #:done)
 
 ;;; (hflipped? img) -> boolean?
 ;;;   img : image?
@@ -2533,21 +2589,21 @@
                img)))
 
 (sstruct %vflipped %flipped ()
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (format "~a, flipped vertically"
-                      (image-description (subimage img)))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:flip-vertical (image-picture (subimage img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'vflip (image-structure (subimage img)))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "~a, flipped vertically"
+               (image-description (subimage img)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:flip-vertical (image-picture (subimage img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'vflip (image-structure (subimage img)))))]
+  #:done)
 
 ;;; (vflipped? img) -> boolean?
 ;;;   img : image?
@@ -2568,27 +2624,27 @@
                img)))
 
 (sstruct %redescribed %transformed ()
-         #:cloneable
-         #:methods gen:preserved []
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (image-description (subimage img))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (image-picture (subimage img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'redescribe
-                    (image-structure (subimage img))
-                    (image-description img))))]
-         #:methods gen:img-recolor
-         [(define .image-recolor
-            (lambda (img color)
-              (image-recolor (subimage img) color)))]
-         #:done)
+  #:cloneable
+  #:methods gen:preserved []
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (image-description (subimage img))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (image-picture (subimage img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'redescribe
+             (image-structure (subimage img))
+             (image-description img))))]
+  #:methods gen:img-recolor
+  [(define .image-recolor
+     (lambda (img color)
+       (image-recolor (subimage img) color)))]
+  #:done)
 
 ;;; (redescribed? img) -> boolean?
 ;;;   img : image?
@@ -2612,45 +2668,45 @@
 ; +--------------------------------+
 
 (sstruct %scaled %transformed (hfactor vfactor)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (let ([hfactor (scaled-hfactor img)]
-                    [vfactor (scaled-vfactor img)]
-                    [subdesc (image-description (subimage img))])
-                (cond
-                  [(equal? hfactor vfactor)
-                   (format "~a, scaled by ~a" subdesc hfactor)]
-                  [(equal? hfactor 1)
-                   (format "~a, scaled vertically by ~a" subdesc vfactor)]
-                  [(equal? vfactor 1)
-                   (format "~a, scaled horizontally by ~a" subdesc hfactor)]
-                  [else
-                   (format "~a, scaled horizontally by ~a and vertically by ~a"
-                           subdesc hfactor vfactor)]))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:scale/xy (scaled-hfactor img)
-                              (scaled-vfactor img)
-                              (image-picture (subimage img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (let ([hfactor (scaled-hfactor img)]
-                    [vfactor (scaled-vfactor img)]
-                    [substru (image-structure (subimage img))])
-                (cond
-                  [(equal? hfactor vfactor)
-                   (list 'scale substru hfactor)]
-                  [(equal? hfactor 1)
-                   (list 'vscale substru vfactor)]
-                  [(equal? vfactor 1)
-                   (list 'hscale substru hfactor)]
-                  [else
-                   (list 'hvscale substru hfactor vfactor)]))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([hfactor (scaled-hfactor img)]
+             [vfactor (scaled-vfactor img)]
+             [subdesc (image-description (subimage img))])
+         (cond
+           [(equal? hfactor vfactor)
+            (format "~a, scaled by ~a" subdesc hfactor)]
+           [(equal? hfactor 1)
+            (format "~a, scaled vertically by ~a" subdesc vfactor)]
+           [(equal? vfactor 1)
+            (format "~a, scaled horizontally by ~a" subdesc hfactor)]
+           [else
+            (format "~a, scaled horizontally by ~a and vertically by ~a"
+                    subdesc hfactor vfactor)]))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:scale/xy (scaled-hfactor img)
+                       (scaled-vfactor img)
+                       (image-picture (subimage img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (let ([hfactor (scaled-hfactor img)]
+             [vfactor (scaled-vfactor img)]
+             [substru (image-structure (subimage img))])
+         (cond
+           [(equal? hfactor vfactor)
+            (list 'scale substru hfactor)]
+           [(equal? hfactor 1)
+            (list 'vscale substru vfactor)]
+           [(equal? vfactor 1)
+            (list 'hscale substru hfactor)]
+           [else
+            (list 'hvscale substru hfactor vfactor)]))))]
+  #:done)
 
 (define scaled? %scaled?)
 (define scaled-hfactor %scaled-hfactor)
@@ -2717,35 +2773,35 @@
              vfactor)))
 
 (sstruct %cropped %transformed (left top width height)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (let ([subdesc (image-description (subimage img))])
-                (format "~a, cropped to a left edge of ~a, a top edge of ~a, a width of ~a, and a height of ~a"
-                        subdesc
-                        (%cropped-left img)
-                        (%cropped-top img)
-                        (%cropped-width img)
-                        (%cropped-height img)))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (2htdp:crop (%cropped-left img)
-                          (%cropped-top img)
-                          (%cropped-width img)
-                          (%cropped-height img)
-                          (image-picture (subimage img)))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (list 'crop
-                    (image-structure (subimage img))
-                    (%cropped-left img)
-                    (%cropped-top img)
-                    (%cropped-width img)
-                    (%cropped-height img))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([subdesc (image-description (subimage img))])
+         (format "~a, cropped to a left edge of ~a, a top edge of ~a, a width of ~a, and a height of ~a"
+                 subdesc
+                 (%cropped-left img)
+                 (%cropped-top img)
+                 (%cropped-width img)
+                 (%cropped-height img)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (2htdp:crop (%cropped-left img)
+                   (%cropped-top img)
+                   (%cropped-width img)
+                   (%cropped-height img)
+                   (image-picture (subimage img)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'crop
+             (image-structure (subimage img))
+             (%cropped-left img)
+             (%cropped-top img)
+             (%cropped-width img)
+             (%cropped-height img))))]
+  #:done)
 
 
 ;;; (cropped? img) -> boolean?
@@ -2799,23 +2855,23 @@
 ; +--------------+
 
 (sstruct %compound %image ([images #:mutable])
-         #:transparent
-         #:cloneable
-         #:methods gen:img-subimages
-         [(define subimages
-            (lambda (img)
-              (%compound-images img)))]
-         #:methods gen:img-recolor
-         [(define .image-recolor
-            (lambda (img color)
-              (let ([result (clone img)])
-                (image-clear-fields! result)
-                (set-%compound-images! result
-                                       (map (lambda (i)
-                                              (image-recolor i color))
-                                            (%compound-images img)))
-                result)))]
-         #:done)
+  #:transparent
+  #:cloneable
+  #:methods gen:img-subimages
+  [(define subimages
+     (lambda (img)
+       (%compound-images img)))]
+  #:methods gen:img-recolor
+  [(define .image-recolor
+     (lambda (img color)
+       (let ([result (clone img)])
+         (image-clear-fields! result)
+         (set-%compound-images! result
+                                (map (lambda (i)
+                                       (image-recolor i color))
+                                     (%compound-images img)))
+         result)))]
+  #:done)
 
 ;;; (compound-image? val) -> boolean?
 ;;;   val : any?
@@ -2856,32 +2912,32 @@
 ; +-------+
 
 (sstruct %above %compound (halignment)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (string-append (format "a ~a-aligned stack of images ("
-                                     (%above-halignment img))
-                             (let kernel ([remaining (subimages img)])
-                               (if (null? (cdr remaining))
-                                   (image-description (car remaining))
-                                   (string-append (image-description (car remaining))
-                                                  " above "
-                                                  (kernel (cdr remaining)))))
-                             ")")))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (apply 2htdp:above/align
-                     (cons (%above-halignment img)
-                           (map image-picture (subimages img))))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (cons 'above/align
-                    (cons (%above-halignment img)
-                          (map image-structure (subimages img))))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (string-append (format "a ~a-aligned stack of images ("
+                              (%above-halignment img))
+                      (let kernel ([remaining (subimages img)])
+                        (if (null? (cdr remaining))
+                            (image-description (car remaining))
+                            (string-append (image-description (car remaining))
+                                           " above "
+                                           (kernel (cdr remaining)))))
+                      ")")))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (apply 2htdp:above/align
+              (cons (%above-halignment img)
+                    (map image-picture (subimages img))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (cons 'above/align
+             (cons (%above-halignment img)
+                   (map image-structure (subimages img))))))]
+  #:done)
 
 ;;; (above-halignment img) -> (one-of "left" "center" "right")
 ;;;   img : above?
@@ -2964,32 +3020,32 @@
 ; +--------+
 
 (sstruct %beside %compound (valignment)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (string-append (format "a ~a-aligned sequence of images ("
-                                     (%beside-valignment img))
-                             (let kernel ([remaining (subimages img)])
-                               (if (null? (cdr remaining))
-                                   (image-description (car remaining))
-                                   (string-append (image-description (car remaining))
-                                                  " beside "
-                                                  (kernel (cdr remaining)))))
-                             ")")))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (apply 2htdp:beside/align
-                     (cons (%beside-valignment img)
-                           (map image-picture (subimages img))))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (cons 'beside/align
-                    (cons (%beside-valignment img)
-                          (map image-structure (subimages img))))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (string-append (format "a ~a-aligned sequence of images ("
+                              (%beside-valignment img))
+                      (let kernel ([remaining (subimages img)])
+                        (if (null? (cdr remaining))
+                            (image-description (car remaining))
+                            (string-append (image-description (car remaining))
+                                           " beside "
+                                           (kernel (cdr remaining)))))
+                      ")")))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (apply 2htdp:beside/align
+              (cons (%beside-valignment img)
+                    (map image-picture (subimages img))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (cons 'beside/align
+             (cons (%beside-valignment img)
+                   (map image-structure (subimages img))))))]
+  #:done)
 
 ;;; (beside-valignment img) -> valignment?
 ;;;   img : beside?
@@ -3111,35 +3167,35 @@
 
 
 (sstruct %overlay %compound (halignment valignment hoffset voffset)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (string-append (format "overlaid images, aligned ~a-~a ("
-                                     (overlay-halignment img)
-                                     (overlay-valignment img))
-                             (let kernel ([remaining (subimages img)])
-                               (if (null? (cdr remaining))
-                                   (image-description (car remaining))
-                                   (string-append (image-description (car remaining))
-                                                  " over "
-                                                  (kernel (cdr remaining)))))
-                             ")")))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (overlay-kernel (subimages img)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (string-append (format "overlaid images, aligned ~a-~a ("
                               (overlay-halignment img)
-                              (overlay-valignment img)
-                              (overlay-hoffset img)
-                              (overlay-voffset img))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (cons 'overlay/align
-                    (cons (%overlay-halignment img)
-                          (map image-structure (subimages img))))))]
-         #:done)
+                              (overlay-valignment img))
+                      (let kernel ([remaining (subimages img)])
+                        (if (null? (cdr remaining))
+                            (image-description (car remaining))
+                            (string-append (image-description (car remaining))
+                                           " over "
+                                           (kernel (cdr remaining)))))
+                      ")")))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (overlay-kernel (subimages img)
+                       (overlay-halignment img)
+                       (overlay-valignment img)
+                       (overlay-hoffset img)
+                       (overlay-voffset img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (cons 'overlay/align
+             (cons (%overlay-halignment img)
+                   (map image-structure (subimages img))))))]
+  #:done)
 
 (define overlay-halignment %overlay-halignment)
 (define overlay-valignment %overlay-valignment)
@@ -3224,40 +3280,40 @@
 ; +-------+
 
 (sstruct %place %compound (hside x vside y)
-         #:cloneable
-         #:methods gen:img-make-desc
-         [(define image-make-desc
-            (lambda (img)
-              (let ([sub (subimages img)])
-                (format "one image (~a) whose ~a is placed at ~a and whose ~a is placed at ~a on another image (~a)"
-                        (image-description (car sub))
-                        (%place-hside img)
-                        (%place-x img)
-                        (%place-vside img)
-                        (%place-y img)
-                        (image-description (cadr sub))))))]
-         #:methods gen:img-make-pict
-         [(define image-make-pict
-            (lambda (img)
-              (let ([sub (subimages img)])
-                (2htdp:place-image/align (image-picture (car sub))
-                                         (%place-x img)
-                                         (%place-y img)
-                                         (%place-hside img)
-                                         (%place-vside img)
-                                         (image-picture (cadr sub))))))]
-         #:methods gen:img-make-stru
-         [(define image-make-stru
-            (lambda (img)
-              (let ([sub (subimages img)])
-                (list 'place/sides
-                      (image-structure (car sub))
-                      (%place-hside img)
-                      (%place-x img)
-                      (%place-vside img)
-                      (%place-y img)
-                      (image-structure (cadr sub))))))]
-         #:done)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([sub (subimages img)])
+         (format "one image (~a) whose ~a is placed at ~a and whose ~a is placed at ~a on another image (~a)"
+                 (image-description (car sub))
+                 (%place-hside img)
+                 (%place-x img)
+                 (%place-vside img)
+                 (%place-y img)
+                 (image-description (cadr sub))))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let ([sub (subimages img)])
+         (2htdp:place-image/align (image-picture (car sub))
+                                  (%place-x img)
+                                  (%place-y img)
+                                  (%place-hside img)
+                                  (%place-vside img)
+                                  (image-picture (cadr sub))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (let ([sub (subimages img)])
+         (list 'place/sides
+               (image-structure (car sub))
+               (%place-hside img)
+               (%place-x img)
+               (%place-vside img)
+               (%place-y img)
+               (image-structure (cadr sub))))))]
+  #:done)
 
 ;;; (place/center img x y bg [description]) -> image?
 ;;;   img : image?
@@ -3374,6 +3430,39 @@
 ; +------+-----------------------------------------------------------
 ; | Misc |
 ; +------+
+
+;;; (place-dots dot points img) -> image?
+;;;   dot : 2htdp:image?
+;;;   points : (list-of pt?)
+;;;   img : 2htdp:image?
+;;; Place a copy of `dot` at each point in `points` in `img`.
+(define place-dots
+  (lambda (dot points img)
+    (if (null points)
+        img
+        (place-dots dot (cdr points)
+                    (place dot 
+                           (pt-x (car points)) (pt-y (car points)))))))
+
+;;; (connect-the-dots points line-color dot-color [description]) -> image?
+;;;   points : (list-of pt?)
+;;;   line-color : color?
+;;;   dot-color : color?
+;;;   description : string?
+;;; Make an image by drawing lines between the points and then
+;;; putting small dots at each point.
+(define connect-the-dots
+  (lambda (points line-color dot-color [description #f])
+    (param-check! connect-the-dots 1 (list-of pt?) points)
+    (param-check! connect-the-dots 2 color? line-color)
+    (param-check! connect-the-dots 3 color? dot-color)
+    (when description
+      (param-check! connect-the-dots 4 string? description))
+    (let* ([dot (2htdp:circle 3 "solid" (color->2htdp dot-color))]
+           [width (apply max (map pt-x points))]
+           [height (apply max (map pt-y points))]
+           [bg (2htdp:rectangle width height "solid" (2htdp:color 0 0 0 0))])
+      bg)))
 
 ;;; (basic-images img) -> (listof? image?)
 ;;;   img : image?
