@@ -84,3 +84,9 @@
   (lambda (pt)
     (make-posn (pt-x pt) (pt-y pt))))
 
+;;; (posn->pt posn) -> pt?
+;;;   p : posn?
+;;; Convert a position to a point.
+(define posn->pt
+  (lambda (p)
+    (pt (posn-x p) (posn-y p))))
