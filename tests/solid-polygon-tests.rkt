@@ -1,7 +1,13 @@
 #lang racket
 
+(require "../sstruct.rkt")
+(require "../cloneable.rkt")
+(permit-cloneable)
+(permit-done)
+
 (require "../image.rkt")
 (require "../colors.rkt")
+(require "../point.rkt")
 (require (prefix-in 2htdp: 2htdp/image))
 (require rackunit)
 
