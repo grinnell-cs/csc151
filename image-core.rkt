@@ -34,7 +34,7 @@
 ; +----------+
 
 ;;; (markdown-dir [dir]) -> string?
-;;;   dir : (any/of string? false?)
+;;;   dir : (any-of string? false?)
 ;;; Get or set the current markdown directory.
 ;;;
 ;;; The markdown directory is used for to detemrine how to output
@@ -676,6 +676,20 @@
              (image-width img)
              (image-height img))))
 
+;;; (image-load fname [description]) -> bitmap?
+;;;   fname : string?
+;;;   description : string?
+;;; Load the given image.
+(define image-load
+  (lambda (fname [description #f])
+    (let ([img (2htdp:bitmap/file fname)])
+      (%bitmap description
+               (list 'image-load fname)
+               (list->vector (map 2htdp->rgb (2htdp:image->color-list img)))
+               img
+               (2htdp:image-width img)
+               (2htdp:image-height img)))))
+
 ; +------------------------------+-----------------------------------
 ; | Additional bitmap operations |
 ; +------------------------------+
@@ -917,4 +931,30 @@
       (let* ([fname (image-fname img (or dir "."))])
         (2htdp:save-image (image-picture img) fname)
         (displayln (format "![~a](~a)" (image-description img) fname))))))
+
+; +------------------+-----------------------------------------------
+; | Pixel procedures |
+; +------------------+
+
+;;; (pixel-map color-transformation img ]description]) -> image?
+;;;   color-transformation : procedure?
+;;;   img : image?
+;;;   img2 : image?
+;;;   description : string?
+;;; Create a new image by applying color-transformatin to each pixel
+;;; in the original image.
+(define pixel-map
+  (lambda (ctrans img [description #f])
+    (let* ([w (image-width img)]
+           [h (image-height img)]
+           [orig (image-bitmap img)]
+           [result (bitmap w h (or description
+                                   (format "a transformed version of ~a"
+                                           (image-description img))))]
+           [bits (image-bitmap result)])
+      (let kernel ([pos (- (vector-length bits) 1)])
+        (when (>= pos 0)
+          (vector-set! bits pos (ctrans (vector-ref orig pos)))
+          (kernel (- pos 1))))
+      result)))
 
