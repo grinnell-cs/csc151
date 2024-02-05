@@ -15,6 +15,7 @@
 (require "files.rkt")
 (require "csv.rkt")
 (require "colors.rkt")
+(require "point.rkt")
 (require "image.rkt")
 
 (provide
@@ -24,5 +25,6 @@
   (all-from-out "numbers.rkt")
   (all-from-out "files.rkt")
   (all-from-out "csv.rkt")
+  (all-from-out "point.rkt")
   (all-from-out "colors.rkt")
   (all-from-out "image.rkt"))
