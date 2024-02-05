@@ -13,6 +13,20 @@
 
 (provide (all-defined-out))
 
+; +----------+-------------------------------------------------------
+; | Settings |
+; +----------+
+
+;;; (colors-dir [dir]) -> string
+;;;   dir : (any-of string? false?)
+;;; Get or set the current colors directory
+(define colors-dir
+  (let ([dir #f])
+    (lambda params
+      (when (not (null? params))
+        (set! dir (car params)))
+      dir)))
+
 ; +---------------+--------------------------------------------------
 ; | RGB(A) colors |
 ; +---------------+
@@ -53,10 +67,33 @@
   #:methods gen:custom-write
   [(define write-proc
      (lambda (val port mode)
-       (write (2htdp:square 16 "solid"
-                            (2htdp:color (rgb-red val) (rgb-green val)
-                                         (rgb-blue val) (rgb-alpha val)))
-              port)))]
+       (let* ([red (rgb-red val)]
+              [green (rgb-green val)]
+              [blue (rgb-blue val)]
+              [alpha (rgb-alpha val)]
+              [img (2htdp:square 16 "solid"
+                                 (2htdp:color red green blue alpha))])
+         (when (colors-dir)
+           (when (not (equal? (format "~a" port) "#<output-port:null>"))
+             (let ([dir (colors-dir)])
+               (when (not (directory-exists? dir))
+                 (make-directory dir))
+               (let* ([zeros (lambda (num)
+                               (let ([str (number->string num)])
+                                 (string-append 
+                                  (make-string (- 3 (string-length str)) #\0)
+                                  str)))]
+                      [fname (format "~a/rgb-~a-~a-~a-~a.png"
+                                     dir
+                                     (zeros red)
+                                     (zeros green)
+                                     (zeros blue)
+                                     (zeros alpha))])
+                 (2htdp:save-image img fname)
+                 (displayln (format "![a swatch of ~a](~a)"
+                                    (describe-color val) 
+                                    fname))))))
+         (write img port))))]
   #:guard
   (lambda (red green blue alpha type-name)
     (let ([r (->rgba-component red)]
@@ -145,10 +182,10 @@
   (lambda ()
     (send the-color-database get-names)))
 
-;;; (colors-find name) -> list-of string?
+;;; (find-colors name) -> list-of string?
 ;;;   name : string?
 ;;; Extract all the colors that include "name".
-(define colors-find
+(define find-colors
   (lambda (name)
     (let kernel ([remaining (all-color-names)] [so-far null])
       (cond
@@ -326,7 +363,7 @@
       [(symbol? color)
        (color-red (send the-color-database find-color (symbol->string color)))]
       [(string? color)
-       (color-red (send the-color-database find-color (string? color)))]
+       (color-red (send the-color-database find-color color))]
       [(hsv? color)
        (color-red (hsv->rgb color))]
       [else
@@ -356,7 +393,7 @@
       [(symbol? color)
        (color-green (send the-color-database find-color (symbol->string color)))]
       [(string? color)
-       (color-green (send the-color-database find-color (string? color)))]
+       (color-green (send the-color-database find-color color))]
       [(hsv? color)
        (color-green (hsv->rgb color))]
       [else
@@ -386,7 +423,7 @@
       [(symbol? color)
        (color-blue (send the-color-database find-color (symbol->string color)))]
       [(string? color)
-       (color-blue (send the-color-database find-color (string? color)))]
+       (color-blue (send the-color-database find-color color))]
       [(hsv? color)
        (color-blue (hsv->rgb color))]
       [else
@@ -456,3 +493,42 @@
 (define color-equal?
   (lambda (c1 c2)
     (equal? (color->rgb c1) (color->rgb c2))))
+
+;;; (describe-color c) -> string?
+;;;   c : color?
+;;; Create an appropriate description of c.
+(define describe-color
+  (lambda (c)
+    (let* ([crgb (color->rgb c)]
+           [name (color->color-name c)]
+           [alpha (rgb-alpha crgb)]
+           [nrgb (color->rgb name)]
+           [prefix (if (and (= (rgb-red crgb) (rgb-red nrgb))
+                            (= (rgb-green crgb) (rgb-green nrgb))
+                            (= (rgb-blue crgb) (rgb-blue nrgb)))
+                       ""
+                       "approximately ")])
+      (cond
+        [(zero? alpha)
+         "transparent"]
+        [(<= alpha 64)
+         (string-append "mostly-transparent " prefix name)]
+        [(<= alpha 128)
+         (string-append "semi-transparent " prefix name)]
+        [(<= alpha 192)
+         (string-append "semi-opaque " prefix name)]
+        [(<= alpha 254)
+         (string-append "mostly-opaque " prefix name)]
+        [else
+         (string-append prefix name)]))))
+
+;;; (color->list c) -> (list-of integer?)
+;;;   c : color?
+;;; Create a list containing the four rgb components of c.
+(define color->list
+  (lambda (c)
+    (let ([crgb (color->rgb c)])
+      (list (rgb-red crgb)
+            (rgb-green crgb)
+            (rgb-blue crgb)
+            (rgb-alpha crgb)))))
