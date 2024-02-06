@@ -72,6 +72,18 @@
           (distance (car points) (list-ref points n))
           (distance (list-ref points n) (list-ref points (+ n 1)))))))
 
+;;; (sides-similar? poly i j) -> boolean?
+;;;   poly : polygon?
+;;;   i : (all-of nonnegative-integer? (less-then (polygon-sides poly)))
+;;;   j : (all-of nonnegative-integer? (less-then (polygon-sides poly)))
+;;; Determine whether sides i and j are a similar length.
+(define sides-similar
+  (lambda (poly i j)
+    (param-check! side-similar 0 polygon? poly)
+    (<= (abs (- (polygon-side poly i)
+                (polygon-side poly j)))
+        1)))
+
 ;;; (polygon-point poly n) -> point?
 ;;;   poly : polygon?
 ;;;   n : (all-of nonnegative-integer? (cut (< <> (polygon-sides poly))))
