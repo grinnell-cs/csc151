@@ -393,31 +393,31 @@
 ; | Connecting the dots |
 ; +---------------------+
 
-;;; (add-lines points line-color img) -> 2htdp:image?
-;;;   points : (list-of pt?)
+;;; (add-lines lines line-color img) -> 2htdp:image?
+;;;   lines : (list-of (pair-of pt? pt?))
 ;;;   line-color : 2htdp:color?
 ;;;   img : 2htdp:image?
 ;;; Add the lines between the specified points to the images.
 (define add-lines
-  (lambda (points line-color img)
-    (param-check! add-lines 1 (list-of pt?) points)
+  (lambda (lines line-color img)
+    (param-check! add-lines 1 (list-of (pair-of pt? pt?)) lines)
     (param-check! add-lines 2 2htdp:color? line-color)
     (param-check! add-lines 3 2htdp:image? img)
-    (add-lines/kernel points line-color img)))
+    (add-lines/kernel lines line-color img)))
 
 (define add-lines/kernel
-  (lambda (points line-color img)
+  (lambda (lines line-color img)
     (let kernel ([img img]
-                 [points points])
-      (if (null? (cdr points))
+                 [lines lines])
+      (if (null? lines)
           img
-          (let ([pt1 (car points)]
-                [pt2 (cadr points)])
+          (let ([pt1 (caar lines)]
+                [pt2 (cdar lines)])
             (kernel (2htdp:scene+line img
                                       (pt-x pt1) (pt-y pt1)
                                       (pt-x pt2) (pt-y pt2)
                                       line-color)
-                    (cdr points)))))))
+                    (cdr lines)))))))
 
 ;;; (place-dots dot points img) -> 2htdp:image?
 ;;;   dot : 2htdp:image?
@@ -459,9 +459,30 @@
              [height (+ dot-size (apply max (map pt-y points)))]
              [bg (2htdp:rectangle width height "solid" (2htdp:color 0 0 0 0))])
         (place-dots dot points
-                    (add-lines (lastfirst points)
+                    (add-lines (points->lines (lastfirst points))
                                (color->2htdp line-color)
                                bg))))))
+
+;;; (points->lines points) -> (list-of (pair-of pt? pt?))
+;;;   points : (list-of pt?)
+;;; Turn each pair of subsequent points in points into a
+;;; pair of points.
+(define points->lines
+  (lambda (points)
+    (if (null? (cdr points))
+        null
+        (cons (cons (car points) (cadr points))
+              (points->lines (cdr points))))))
+
+;;; (lines-from source points) -> (list-of (pair-of pt? pt?))
+;;;   source : pt?
+;;;   points? : (list-of pt?)
+;;; Create a list of lines from `source` to each point in `points`.
+(define lines-from
+  (lambda (source points)
+    (map (lambda (point)
+           (cons source point))
+         points)))
 
 ; +----------------+-------------------------------------------------
 ; | Misc utilities |
