@@ -82,7 +82,19 @@
     (lambda (val)
       (and (member val vals) #t))))
 
-;;; (param-error proc-name param-type param-num param-name value) -> (void)
+;;; (pair-of pred1? pred2?) -> unary-predicate?
+;;;   pred1? : unary-predicate?
+;;;   pred2? : unary-predicate?
+;;; Returns a new predicate that checks if its parameter is a pair
+;;; whose car satisfies `pred1?` and whose cdr satisfies `pred2?`.
+(define pair-of
+  (lambda (pred1? pred2?)
+    (lambda (val)
+      (and (pair? val)
+           (pred1? (car val))
+           (pred2? (cdr val))))))
+
+;;; (param-error proc-name param-type param-num param-name value) -> void?
 ;;;   proc-name : symbol?
 ;;;   param-type : symbol?
 ;;;   param-num : positive-integer?
@@ -98,7 +110,7 @@
            param-name
            value)))
 
-;;; (param-check! proc num type? param) -> void
+;;; (param-check! proc num type? param) -> void?
 ;;;   proc-name : identifier?
 ;;;   param-num : positive-integer?
 ;;;   type? : predicate?
