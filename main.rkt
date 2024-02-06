@@ -17,6 +17,7 @@
 (require "colors.rkt")
 (require "point.rkt")
 (require "image.rkt")
+(require "type-predicates.rkt")
 
 (provide
   (all-from-out "lists.rkt")
@@ -27,4 +28,5 @@
   (all-from-out "csv.rkt")
   (all-from-out "point.rkt")
   (all-from-out "colors.rkt")
-  (all-from-out "image.rkt"))
+  (all-from-out "image.rkt")
+  (all-from-out "type-predicates.rkt"))
