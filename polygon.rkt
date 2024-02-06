@@ -77,7 +77,7 @@
 ;;;   i : (all-of nonnegative-integer? (less-then (polygon-sides poly)))
 ;;;   j : (all-of nonnegative-integer? (less-then (polygon-sides poly)))
 ;;; Determine whether sides i and j are a similar length.
-(define sides-similar
+(define sides-similar?
   (lambda (poly i j)
     (param-check! side-similar 0 polygon? poly)
     (<= (abs (- (polygon-side poly i)
