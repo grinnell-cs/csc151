@@ -32,6 +32,7 @@
 (require "rectangle.rkt")
 (require "square.rkt")
 (require "diamond.rkt")
+(require "triangle.rkt")
 (require "ellipse.rkt")
 (require "circle.rkt")
 (require "transformations.rkt")
