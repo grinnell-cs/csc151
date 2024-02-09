@@ -826,3 +826,36 @@
          (rgb-green c)
          (rgb-blue c)
          (+ (rgb-alpha c) 32))))
+
+; +--------------------+---------------------------------------------
+; | Color combinations |
+; +--------------------+
+
+;;; (rgb-subtract c1 c2) -> rgb?
+;;;   c1 : rgb?
+;;;   c2 : rgb?
+;;; Create a new RGB color by subtracting each component of `c2` from
+;;; the corresponding component of `c1`.
+(define rgb-subtract
+  (lambda (c1 c2)
+    (param-check! rgb-subtract 1 rgb? c1)
+    (param-check! rgb-subtract 2 rgb? c2)
+    (rgb (- (rgb-red c1) (rgb-red c2))
+         (- (rgb-green c1) (rgb-green c2))
+         (- (rgb-blue c1) (rgb-blue c2))
+         (rgb-alpha c1))))
+
+;;; (rgb-average c1 c2) -> rgb?
+;;;   c1 : rgb?
+;;;   c2 : rgb?
+;;; Create a new RGB color by averaging the corresponding components of
+;;; c1 and c2.
+(define rgb-average
+  (lambda (c1 c2)
+    (param-check! rgb-average 1 rgb? c1)
+    (param-check! rgb-average 2 rgb? c2)
+    (rgb (* 1/2 (+ (rgb-red c1) (rgb-red c2)))
+         (* 1/2 (+ (rgb-blue c1) (rgb-blue c2)))
+         (* 1/2 (+ (rgb-green c1) (rgb-green c2)))
+         (* 1/2 (+ (rgb-alpha c1) (rgb-alpha c2))))))
+
