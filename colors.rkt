@@ -54,14 +54,14 @@
        (max 0 (min 255 (inexact->exact (round val))))])))
 
 ;;; (rgba r g b a) -> rgba?
-;;;   r : rgba-component? 
+;;;   r : rgba-component?
 ;;;   g : rgba-component?
 ;;;   b : rgba-component?
 ;;;   a : rgba-component?
 ;;; Create an RGBA color.
 ;;;
 ;;; Placeholder documentation for the struct.
-(struct rgba (red green blue alpha) 
+(struct rgba (red green blue alpha)
   #:transparent
   #:reflection-name 'rgb
   #:methods gen:custom-write
@@ -80,7 +80,7 @@
                  (make-directory dir))
                (let* ([zeros (lambda (num)
                                (let ([str (number->string num)])
-                                 (string-append 
+                                 (string-append
                                   (make-string (- 3 (string-length str)) #\0)
                                   str)))]
                       [fname (format "~a/rgb-~a-~a-~a-~a.png"
@@ -91,7 +91,7 @@
                                      (zeros alpha))])
                  (2htdp:save-image img fname)
                  (displayln (format "![a swatch of ~a](~a)"
-                                    (describe-color val) 
+                                    (describe-color val)
                                     fname))))))
          (write img port))))]
   #:guard
@@ -117,7 +117,7 @@
 ;;;   g : real?
 ;;;   b : real?
 ;;;   a : real? (optional)
-;;; Create a new RGB color.  Values outside of the 0 ... 255 bounds 
+;;; Create a new RGB color.  Values outside of the 0 ... 255 bounds
 ;;; are capped appropriately.
 (define rgb
   (lambda (r g b [a 255])
@@ -175,7 +175,7 @@
         (and (string? str)
              (send the-color-database find-color str)
              #t))))
-             
+
 ;;; (all-color-names) -> list-of string?
 ;;; Get a list of all the color names.
 (define all-color-names
@@ -196,18 +196,187 @@
         [else
          (kernel (cdr remaining) so-far)]))))
 
+; +---------------+--------------------------------------------------
+; | Color strings |
+; +---------------+
+
+;;; (rgb-string? str) -> boolean?
+;;;   str : string?
+;;; Determines if str appears to be a color string.
+(define rgb-string?
+  (lambda (str)
+    (and (rgb-string->rgb str)
+         #t)))
+
+;;; (rgb-string->rgb str) -> (any/of rgb? false?)
+;;;   str : rgb-string?
+;;; Convert an RGB string to an RGB color. If that's not possible,
+;;; returns false.
+(define rgb-string->rgb
+  (lambda (str)
+    (and (string? str)
+         (let ([parts (string-split str "/")])
+           (and (= 3 (length parts))
+                (let ([components (map string->number parts)])
+                  (and (andmap number? components)
+                       (apply rgb components))))))))
+
+;;; (rgb->string c) -> string?
+;;;   c : color?
+;;; Converts an RGB color to an RGB string.
+(define rgb->string
+  (lambda (c)
+    (let ([crgb (color->rgb c)])
+      (string-append (number->string (rgb-red crgb))
+                     "/"
+                     (number->string (rgb-green crgb))
+                     "/"
+                     (number->string (rgb-blue crgb))))))
+
+;;; (color->string c) -> string?
+;;;   c : color?
+;;; Convert a color to an RGB string.
+(define color->string
+  (lambda (c)
+    (rgb->string (color->rgb c))))
+
 ; +------------+-----------------------------------------------------
 ; | HSV colors |
 ; +------------+
 
-; These are not yet implemented.
+(struct hsva (hue saturation value alpha)
+  #:transparent
+  #:reflection-name 'rgb
+  #:methods gen:custom-write
+  [(define write-proc
+     (lambda (val port mode)
+       (write (hsv->rgb val) port mode)))]
+  #:guard
+  (lambda (hue saturation value alpha type-name)
+    (param-check! hsv 1 real? hue)
+    (param-check! hsv 2 real? saturation)
+    (param-check! hsv 3 real? value)
+    (param-check! hsv 4 real? alpha)
+    (let ([h (inexact->exact (max 0 (min 360 hue)))]
+          [s (inexact->exact (max 0 (min 100 saturation)))]
+          [v (inexact->exact (max 0 (min 100 value)))]
+          [a (inexact->exact (max 0 (min 255 value)))])
+      (values h s v a))))
+
+;;; (hsv hue saturation value [alpha]) -> color?
+;;;   hue : (all-of nonnegative-real? (less-than 360))
+;;;   saturation : (all-of nonnegative-real? (less-than 100))
+;;;   value : (all-of nonnegative-real? (less-than 100))
+;;;   alpha : (all-of nonnegative-real? (less-than 255))
+;;; Create a new RGB color.  Values outside of the bounds
+;;; are capped appropriately.
+(define hsv
+  (lambda (hue saturation value [alpha 255])
+    (hsva hue saturation value alpha)))
 
 ;;; (hsv? val) -> boolean?
 ;;;   val : any?
-;;; Determine if `val` is an HSV color.
-(define hsv?
-  (lambda (val)
-    false))
+;;; Determine if val is an HSV color.
+(define hsv? hsva?)
+
+;;; (hsv-hue c) -> integer?
+;;;   c : hsv?
+;;; Determine the hue of an HSV color.
+(define hsv-hue hsva-hue)
+
+;;; (hsv-saturation c) -> integer?
+;;;   c : hsv?
+;;; Determine the saturation of an HSV color.
+(define hsv-saturation hsva-saturation)
+
+;;; (hsv-value c) -> integer?
+;;;   c : hsv?
+;;; Determine the value of an HSV color.
+(define hsv-value hsva-value)
+
+;;; (hsv-alpha c) -> integer?
+;;;   c : hsv?
+;;; Determine the alpha of an HSV color.
+(define hsv-alpha hsva-alpha)
+
+;;; (hsv-complement c) -> c?
+;;;   c : hsv?
+;;; Determine the complement of an HSV color.
+(define hsv-complement
+  (lambda (c)
+    (hsv (modulo (+ (hsv-hue c) 180) 360)
+         (hsv-saturation c)
+         (hsv-value c)
+         (hsv-alpha c))))
+
+;;; (rgb-hue rgb) -> Integers [0..360]
+;;;   rgb : color?
+;;; Get the hue from an RGB color
+(define rgb-hue
+  (lambda (color)
+    (rgb-hue-helper (color-red color) (color-green color) (color-blue color))))
+
+(define rgb-hue-helper
+  (lambda (red green blue)
+    (rgb-hue-helper2 (max red green blue) (min red green blue) red green blue)))
+
+(define rgb-hue-helper2
+  (lambda (cmax cmin red green blue)
+    (cond
+      [(zero? (- cmax cmin))
+        (random 360)]
+      [(= red cmax)
+       (fix-hue (/ (- green blue) (- cmax cmin)))]
+      [(= green cmax)
+       (fix-hue (+ 2 (/ (- blue red) (- cmax cmin))))]
+      [else
+       (fix-hue (+ 4 (/ (- red green) (- cmax cmin))))])))
+
+(define fix-hue
+  (lambda (hue)
+    (round (* 60 (if (< hue 0)
+                     (+ hue 6)
+                     hue)))))
+
+;;; (rgb-saturation rgb) -> integer? (between 0 and 100)
+;;;   rgb : color?
+;;; Convert rgb to the appropriate saturation.
+(define rgb-saturation
+  (lambda (c)
+    (rgb-saturation-helper (max (color-red c)
+                                (color-green c)
+                                (color-blue c))
+                           (min (color-red c)
+                                (color-green c)
+                                (color-blue c)))))
+
+;;; (rgb-saturation-helper cmax cmin) -> integer? [0..100]
+;;;   cmax : integer? [0..255]
+;;;   cmin : integer? [0..255]
+;;; Find the saturation given the max and min components.
+(define rgb-saturation-helper
+  (lambda (cmax cmin)
+    (if (= cmax 0)
+        0
+        (inexact->exact (round (* 100 (/ (- cmax cmin) cmax)))))))
+
+;;; (rgb-value rgb) -> integer? [0..100]
+;;;   rgb : color?
+;;; Find the value.
+(define rgb-value
+  (lambda (rgb)
+    (round (inexact->exact (* 100
+                              (/ (max (rgb-red rgb)
+                                      (rgb-green rgb)
+                                      (rgb-blue rgb))
+                                 255))))))
+
+;;; (rgb->hsv c) -> hsv?
+;;;   c : rgb?
+;;; Convert an RGB color to HSV form.
+(define rgb->hsv
+  (lambda (c)
+    (hsv (rgb-hue c) (rgb-saturation c) (rgb-value c) (rgb-alpha c))))
 
 ; +------------------+-----------------------------------------------
 ; | Other predicates |
@@ -266,7 +435,7 @@
          (2htdp:color-blue color)
          (2htdp:color-alpha color))))
 
-;;; (color->rgb color) -> (or/c color? false?)
+;;; (color->rgb color) -> (or/c rgb? false?)
 ;;;   color : color? (one of the many forms)
 ;;; Convert one of the many forms of colors to an RGB color
 (define color->rgb
@@ -275,7 +444,7 @@
       [(false? color)
        #f]
       [((is-a?/c color%) color)
-       (rgba (send color red) (send color green) (send color blue) 
+       (rgba (send color red) (send color green) (send color blue)
              (inexact->exact (round (* 255 (send color alpha)))))]
       [(rgb? color)
        color]
@@ -284,39 +453,42 @@
       [(symbol? color)
        (color-name->rgb color)]
       [(string? color)
-       (color-name->rgb color)]
+       (or (rgb-string->rgb color)
+           (color-name->rgb color))]
       [(hsv? color)
        (hsv->rgb color)]
       [else
        #f])))
 
-;;; (hsv->rgb h s v) -> color?
-;;;   h : integer? [0..360]
-;;;   s : integer? [0..100]
-;;;   v : integer? [0..100] 
+;;; (hsv->rgb h s v) -> rgb?
+;;;   color : hsv?
 ;;; Convert an HSV color to an RGB color.
 ;;; Formulae taken from https://www.rapidtables.com/convert/color/hsv-to-rgb.html
 (define hsv->rgb
-  (lambda (h s v)
-    (let* ([c (* s v 1/10000)]
-           [x (* c (- 1 (abs (- (mod2 (/ h 60)) 1))))]
-           [m (- (/ v 100) c)]
-           [cc (round (* 255 (+ c m)))]
-           [cx (round (* 255 (+ x m)))]
-           [c0 (round (* 255 m))])
-      (cond
-        [(< h 60)
-         (rgb cc cx c0)]
-        [(< h 120)
-         (rgb cx cc c0)]
-        [(< h 180)
-         (rgb c0 cc cx)]
-        [(< h 240)
-         (rgb c0 cx cc)]
-        [(< h 300)
-         (rgb cx c0 cc)]
-        [else
-         (rgb cc c0 cx)]))))
+  (lambda (color)
+    (let ([h (hsv-hue color)]
+          [s (hsv-saturation color)]
+          [v (hsv-value color)]
+          [a (hsv-alpha color)])
+      (let* ([c (* s v 1/10000)]
+             [x (* c (- 1 (abs (- (mod2 (/ h 60)) 1))))]
+             [m (- (/ v 100) c)]
+             [cc (round (* 255 (+ c m)))]
+             [cx (round (* 255 (+ x m)))]
+             [c0 (round (* 255 m))])
+        (cond
+          [(< h 60)
+           (rgb cc cx c0 a)]
+          [(< h 120)
+           (rgb cx cc c0 a)]
+          [(< h 180)
+           (rgb c0 cc cx a)]
+          [(< h 240)
+           (rgb c0 cx cc a)]
+          [(< h 300)
+           (rgb cx c0 cc a)]
+          [else
+           (rgb cc c0 cx a)])))))
 
 ;;; (rgb->2htdp rgb) -> 2htdp:color?
 ;;;   rgb : rgb?
@@ -349,7 +521,7 @@
 
 ;;; (color-red color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the red component of `color`. Returns `#f` if `color` is not 
+;;; Gets the red component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 (define color-red
   (lambda (color)
@@ -371,7 +543,7 @@
 
 ;;; (red-component color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the red component of `color`. Returns `#f` if `color` is not 
+;;; Gets the red component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 ;;;
 ;;; DEPRECATED. Replaced by `color-red`.
@@ -379,7 +551,7 @@
 
 ;;; (color-green color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the green component of `color`. Returns `#f` if `color` is not 
+;;; Gets the green component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 (define color-green
   (lambda (color)
@@ -401,7 +573,7 @@
 
 ;;; (green-component color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the green component of `color`. Returns `#f` if `color` is not 
+;;; Gets the green component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 ;;;
 ;;; DEPRECATED. Replaced by `color-green`.
@@ -409,7 +581,7 @@
 
 ;;; (color-blue color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the blue component of `color`. Returns `#f` if `color` is not 
+;;; Gets the blue component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 (define color-blue
   (lambda (color)
@@ -431,7 +603,7 @@
 
 ;;; (blue-component color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the blue component of `color`. Returns `#f` if `color` is not 
+;;; Gets the blue component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 ;;;
 ;;; DEPRECATED. Replaced by `color-blue`.
@@ -439,7 +611,7 @@
 
 ;;; (color-alpha color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the alpha component of `color`. Returns `#f` if `color` is not 
+;;; Gets the alpha component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 (define color-alpha
   (lambda (color)
@@ -461,7 +633,7 @@
 
 ;;; (alpha-component color) -> (any-of integer? false?)
 ;;;   color : color?
-;;; Gets the alpha component of `color`. Returns `#f` if `color` is not 
+;;; Gets the alpha component of `color`. Returns `#f` if `color` is not
 ;;; one of the standard color types.
 ;;;
 ;;; DEPRECATED. Replaced by `color-alpha`.
@@ -478,7 +650,7 @@
 ;;; Used primarily for hsv->rgb.
 (define mod2
   (lambda (x)
-    (cond 
+    (cond
       [(< x 0)
        (- 2 (mod2 (- x)))]
       [(< x 2)
@@ -532,3 +704,125 @@
             (rgb-green crgb)
             (rgb-blue crgb)
             (rgb-alpha crgb)))))
+
+; +-----------------------+------------------------------------------
+; | Color transformations |
+; +-----------------------+
+
+;;; (rgb-darker c) -> rgb?
+;;;   c : rgb?
+;;; Compute a darker version of `c` (if possible).
+(define rgb-darker
+  (lambda (c)
+    (rgb (- (rgb-red c) 16)
+         (- (rgb-green c) 16)
+         (- (rgb-blue c) 16)
+         (rgb-alpha c))))
+
+;;; (rgb-lighter c) -> rgb?
+;;;   c : rgb?
+;;; Compute a lighter version of `c` (if possible).
+(define rgb-lighter
+  (lambda (c)
+    (rgb (+ (rgb-red c) 16)
+         (+ (rgb-green c) 16)
+         (+ (rgb-blue c) 16)
+         (rgb-alpha c))))
+
+;;; (rgb-bluer c) -> rgb?
+;;;   c : rgb?
+;;; Compute a bluer version of `c` (if possible).
+(define rgb-bluer
+  (lambda (c)
+    (rgb (- (rgb-red c) 16)
+         (- (rgb-green c) 16)
+         (+ (rgb-blue c) 32)
+         (rgb-alpha c))))
+
+;;; (rgb-greener c) -> rgb?
+;;;   c : rgb?
+;;; Compute a greener version of `c` (if possible).
+(define rgb-greener
+  (lambda (c)
+    (rgb (- (rgb-red c) 16)
+         (+ (rgb-green c) 32)
+         (- (rgb-blue c) 16)
+         (rgb-alpha c))))
+
+;;; (rgb-redder c) -> rgb?
+;;;   c : rgb?
+;;; Compute a redder version of `c` (if possible).
+(define rgb-redder
+  (lambda (c)
+    (rgb (+ (rgb-red c) 32)
+         (- (rgb-green c) 16)
+         (- (rgb-blue c) 16)
+         (rgb-alpha c))))
+
+;;; (rgb-pseudo-complement c) -> rgb?
+;;;   c : rgb?
+;;; Compute the pseudo-complement of `c`.
+(define rgb-pseudo-complement
+  (lambda (c)
+    (rgb (- 255 (rgb-red c))
+         (- 255 (rgb-green c))
+         (- 255 (rgb-blue c))
+         (rgb-alpha c))))
+
+;;; (rgb-complement c) -> rgb?
+;;;   c : rgb?
+;;; Compute the complement of c.
+(define rgb-complement
+  (lambda (c)
+    (hsv->rgb (hsv-complement (rgb->hsv c)))))
+
+;;; (rgb-greyscale c) -> rgb?
+;;;   c : rgb?
+;;; Convert `c` to greyscale (or approximately greyscale).
+(define rgb-greyscale
+  (lambda (c)
+     (let ([ave (+ (* 0.30 (rgb-red c))
+                   (* 0.59 (rgb-green c))
+                   (* 0.11 (rgb-blue c)))])
+       (rgb ave ave ave (rgb-alpha c)))))
+
+;;; (rgb-phaseshift c) -> rgb?
+;;;   c : rgb?
+;;; Shift each component of `c` by 128, adding 128 to values less than
+;;; 128 and subtracting 128 from values greater than or equal to 128.
+(define rgb-phaseshift
+  (lambda (c)
+    (rgb (remainder (+ (rgb-red c) 128) 256)
+         (remainder (+ (rgb-green c) 128) 256)
+         (remainder (+ (rgb-blue c) 128) 256)
+         (rgb-alpha c))))
+
+;;; (rgb-rotate-components c) -> rgb?
+;;;   c : rgb?
+;;; "Rotate" the three components of rgb.
+(define rgb-rotate-components
+  (lambda (c)
+    (rgb (rgb-green c)
+         (rgb-blue c)
+         (rgb-red c)
+         (rgb-alpha c))))
+
+;;; (rgb-thin c) -> rgb?
+;;;   c : rgb?
+;;; Make `c` more transparent (if possible).
+(define rgb-thin
+  (lambda (c)
+    (rgb (rgb-red c)
+         (rgb-green c)
+         (rgb-blue c)
+         (- (rgb-alpha c) 32))))
+
+;;; (rgb-thicken c) -> rgb?
+;;;   c : rgb?
+;;; Make `c` more opaque (if possible).
+(define rgb-thicken
+  (lambda (c)
+    (rgb (rgb-red c)
+         (rgb-green c)
+         (rgb-blue c)
+         (+ (rgb-alpha c) 32))))
