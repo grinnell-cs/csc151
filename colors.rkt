@@ -855,7 +855,7 @@
     (param-check! rgb-average 1 rgb? c1)
     (param-check! rgb-average 2 rgb? c2)
     (rgb (* 1/2 (+ (rgb-red c1) (rgb-red c2)))
-         (* 1/2 (+ (rgb-blue c1) (rgb-blue c2)))
          (* 1/2 (+ (rgb-green c1) (rgb-green c2)))
+         (* 1/2 (+ (rgb-blue c1) (rgb-blue c2)))
          (* 1/2 (+ (rgb-alpha c1) (rgb-alpha c2))))))
 
