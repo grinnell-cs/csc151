@@ -761,7 +761,8 @@
 
 ;;; (rgb-pseudo-complement c) -> rgb?
 ;;;   c : rgb?
-;;; Compute the pseudo-complement of `c`.
+;;; Compute the pseudo-complement of `c`, a color, that when added to `c`,
+;;; gives you white.
 (define rgb-pseudo-complement
   (lambda (c)
     (rgb (- 255 (rgb-red c))
@@ -799,7 +800,7 @@
 
 ;;; (rgb-rotate-components c) -> rgb?
 ;;;   c : rgb?
-;;; "Rotate" the three components of rgb.
+;;; "Rotate" the three components of `c`.
 (define rgb-rotate-components
   (lambda (c)
     (rgb (rgb-green c)
@@ -830,6 +831,20 @@
 ; +--------------------+---------------------------------------------
 ; | Color combinations |
 ; +--------------------+
+
+;;; (rgb-add c1 c2) -> rgb?
+;;;   c1 : rgb?
+;;;   c2 : rgb?
+;;; Create a new RGB color by subtracting each component of `c2` to
+;;; the corresponding component of `c1`. Retain the alpha value of `c1`.
+(define rgb-add
+  (lambda (c1 c2)
+    (param-check! rgb-add 1 rgb? c1)
+    (param-check! rgb-add 2 rgb? c2)
+    (rgb (+ (rgb-red c1) (rgb-red c2))
+         (+ (rgb-green c1) (rgb-green c2))
+         (+ (rgb-blue c1) (rgb-blue c2))
+         (rgb-alpha c1))))
 
 ;;; (rgb-subtract c1 c2) -> rgb?
 ;;;   c1 : rgb?
