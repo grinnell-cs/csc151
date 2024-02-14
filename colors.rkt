@@ -250,7 +250,7 @@
   #:methods gen:custom-write
   [(define write-proc
      (lambda (val port mode)
-       (write (hsv->rgb val) port mode)))]
+       (write (hsv->rgb val) port)))]
   #:guard
   (lambda (hue saturation value alpha type-name)
     (param-check! hsv 1 real? hue)
