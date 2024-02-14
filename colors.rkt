@@ -260,7 +260,7 @@
     (let ([h (inexact->exact (max 0 (min 360 hue)))]
           [s (inexact->exact (max 0 (min 100 saturation)))]
           [v (inexact->exact (max 0 (min 100 value)))]
-          [a (inexact->exact (max 0 (min 255 value)))])
+          [a (inexact->exact (max 0 (min 255 alpha)))])
       (values h s v a))))
 
 ;;; (hsv hue saturation value [alpha]) -> color?
