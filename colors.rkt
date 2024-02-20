@@ -17,15 +17,27 @@
 ; | Settings |
 ; +----------+
 
-;;; (colors-dir [dir]) -> string
+;;; (colors-dir [dir]) -> string?
 ;;;   dir : (any-of string? false?)
-;;; Get or set the current colors directory
+;;; Get or set the current colors directory.
 (define colors-dir
   (let ([dir #f])
     (lambda params
       (when (not (null? params))
         (set! dir (car params)))
       dir)))
+
+;;; (colors-size [size]) -> positive-integer?
+;;;   size : positiveinteger?
+;;; Get or set the size in which colors are rendered.
+(define colors-size
+  (let ([csize 16])
+    (lambda params
+      (when (not (null? params))
+        (let ([size (car params)])
+          (param-check! colors-size 1 positive-integer? size)
+          (set! csize size)))
+      csize)))
 
 ; +---------------+--------------------------------------------------
 ; | RGB(A) colors |
@@ -71,7 +83,7 @@
               [green (rgb-green val)]
               [blue (rgb-blue val)]
               [alpha (rgb-alpha val)]
-              [img (2htdp:square 16 "solid"
+              [img (2htdp:square (colors-size) "solid"
                                  (2htdp:color red green blue alpha))])
          (when (colors-dir)
            (when (not (equal? (format "~a" port) "#<output-port:null>"))
@@ -160,6 +172,13 @@
        (sqr (- (rgb-green color1) (rgb-green color2)))
        (sqr (- (rgb-blue color1) (rgb-blue color2)))
        (sqr (- (rgb-alpha color1) (rgb-alpha color2))))))
+
+;;; (rgb-component? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` is a valid rgb component?
+(define rgb-component?
+  (lambda (val)
+    (and (integer? val) (exact? val) (<= 0 val 255))))
 
 ; +-------------+----------------------------------------------------
 ; | Color names |
