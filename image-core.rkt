@@ -411,6 +411,25 @@
       (set-image-bits! img (image-make-bits img)))
     (image-bits img)))
 
+;;; (image-get-pixel image col row) -> rgb?
+;;;   image : image?
+;;;   col : (all-of nonnegative-integer? (less-than (bitmap-width image)))
+;;;   row : (all-of nonnegative-integer? (less-than (bitmap-height image)))
+;;; Get the color of the pixel at position (`col`,`row`) in `image`.
+(define image-get-pixel/kernel
+  (lambda (image col row)
+    (vector-ref (image-bitmap image)
+                (+ col (* row (image-width image))))))
+
+(define image-get-pixel
+  (lambda (image col row)
+    (param-check! image-get-pixel 1 image? image)
+    (param-check! image-get-pixel 2 nonnegative-integer? col)
+    (param-check! image-get-pixel 2 (less-than (image-width image)) col)
+    (param-check! image-get-pixel 3 nonnegative-integer? row)
+    (param-check! image-get-pixel 3 (less-than (image-height image)) row)
+    (image-get-pixel/kernel image col row)))
+
 ;;; (image-description img) -> string?
 ;;;   img : image?
 ;;; Get the description of the image.
@@ -936,12 +955,11 @@
 ; | Pixel procedures |
 ; +------------------+
 
-;;; (pixel-map color-transformation img ]description]) -> image?
+;;; (pixel-map color-transformation img [description]) -> image?
 ;;;   color-transformation : procedure?
 ;;;   img : image?
-;;;   img2 : image?
 ;;;   description : string?
-;;; Create a new image by applying color-transformatin to each pixel
+;;; Create a new image by applying color-transformation to each pixel
 ;;; in the original image.
 (define pixel-map
   (lambda (ctrans img [description #f])
@@ -956,5 +974,80 @@
         (when (>= pos 0)
           (vector-set! bits pos (ctrans (vector-ref orig pos)))
           (kernel (- pos 1))))
+      result)))
+
+;;; (pixel-plus-map make-color img [description]) -> image?
+;;;   make-color : procedure?
+;;;   img : img?
+;;;   description : string?
+;;; Create a new image by applying `transformation` at each position
+;;; in the image.
+;;;
+;;; `transformation` should take the following parameters:
+;;;   pixel : rgb? (corresponding to the color of the current pixel)
+;;;   col : integer? (corresponding to the column of the current pixel)
+;;;   row : integer? (corresponding to the row of the current pixel)
+;;;   northwest : rgb? (corresponding to the color of the pixel up one row and left one column)
+;;;   north : rgb? (corresponding to the color of the pixel up one row and in the same column)
+;;;   northeast : rgb? (corresponding to the color of the pixel up one row and right one column)
+;;;   west : rgb? (corresponding to the color of the pixel immediately left of the pixel)
+;;;   east : rgb? (corresponding to the color of the pixel immediately right of the piel)
+;;;   southwest : rgb? (corresponding to the color of the pixel down one row and left one column)
+;;;   south :rgb? (corresponding to the color of the pixel immediately below the pixel)
+;;;   southeast : rgb? (corresponding to the color of the pixel down one row and right one column)
+;;;
+;;; Boundary cells get (rgb 128 128 128) for appropriate neighbors.
+(define pixel-plus-map
+  (lambda (make-color img [description #f])
+    (let* ([default (rgb 128 128 128)]
+           [w (image-width img)]
+           [h (image-height img)]
+           [orig (image-bitmap img)]
+           [result (bitmap w h (or description
+                                   (format "a transformed version of ~a"
+                                           (image-description img))))]
+           [bits (image-bitmap result)])
+      (let kernel ([col 0]
+                   [row 0]
+                   [pos 0])
+        (when (< row h)
+          (cond
+            [(>= col w)
+             (kernel 0 (+ row 1) pos)]
+            [else
+             (let* ([lastcol? (>= col (- w 1))]
+                    [lastrow? (>= row (- h 1))]
+                    [northwest (if (or (zero? row) (zero? col)) 
+                                  default
+                                  (vector-ref bits (- pos 1)))]
+                    [north (if (zero? row)
+                               default
+                               (vector-ref bits (- pos w)))]
+                    [northeast (if (or (zero? row) lastcol?)
+                                   default
+                                   (vector-ref bits (+ 1 (- pos w))))]
+                    [west (if (zero? col)
+                              default
+                              (vector-ref bits (- pos 1)))]
+                    [east (if (>= col (- w 1))
+                              default
+                              (vector-ref bits (+ pos 1)))]
+                    [southwest (if (or lastrow? (zero? col))
+                                   default
+                                   (vector-ref bits (+ pos w -1)))]
+                    [south (if lastrow?
+                               default
+                               (vector-ref bits (+ pos w)))]
+                    [southeast (if (or lastrow? lastcol?)
+                                   default
+                                   (vector-ref bits (+ pos w 1)))])
+               (vector-set! bits 
+                            pos 
+                            (make-color (vector-ref bits pos)
+                                        col row
+                                        northwest north northeast
+                                        west east
+                                        southwest south southeast))
+               (kernel (+ col 1) row (+ pos 1)))])))
       result)))
 
