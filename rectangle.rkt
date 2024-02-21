@@ -43,8 +43,8 @@
        (format "~a/solid-~a-~ax~a-rectangle.png"
                (or dir ".")
                (color->color-name (image-color img))
-               (rectangle-width img)
-               (rectangle-height img))))]
+               (round (rectangle-width img))
+               (round (rectangle-height img)))))]
   #:methods gen:img-make-desc
   [(define image-make-desc
      (lambda (img)
