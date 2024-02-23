@@ -7,7 +7,6 @@
 ;;; Author:
 ;;;   Samuel A. Rebelsky
 
-#|
 (provide
   (contract-out
     [iota (-> natural-number/c (listof integer?))]
@@ -19,8 +18,8 @@
     [tally-all (-> list? list?)]
     [take-random (-> list? integer? list?)]
     ))
-|#
 
+#|
 (provide iota 
          map1 
          reduce 
@@ -29,6 +28,7 @@
          tally 
          tally-all
          take-random)
+|#
 
 ; +-------------------------------+----------------------------------
 ; | Private procedures and values |
