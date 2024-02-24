@@ -386,6 +386,16 @@
          (when (not (equal? (format "~a" port) "#<output-port:null>"))
            (markdown-image img)))
        (write (image-picture img) port)))]
+  #:methods gen:equal+hash
+  [(define equal-proc 
+     (lambda (a b equal?-recur)
+       (equal?-recur (image-picture a) (image-picture b))))
+   (define hash-proc 
+     (lambda (a hash-recur)
+       (hash-recur (image-picture a))))
+   (define hash2-proc 
+     (lambda (a hash2-recur)
+       (hash2-recur (image-picture a))))]
   #:done)
 
 (define image
