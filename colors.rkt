@@ -241,16 +241,15 @@
                        (apply rgb components))))))))
 
 ;;; (rgb->string c) -> string?
-;;;   c : color?
-;;; Converts an RGB color to an RGB string.
+;;;   c : rgb?
+;;; Convert an RGB color to an RGB string.
 (define rgb->string
   (lambda (c)
-    (let ([crgb (color->rgb c)])
-      (string-append (number->string (rgb-red crgb))
-                     "/"
-                     (number->string (rgb-green crgb))
-                     "/"
-                     (number->string (rgb-blue crgb))))))
+    (string-append (number->string (rgb-red c))
+                   "/"
+                   (number->string (rgb-green c))
+                   "/"
+                   (number->string (rgb-blue c)))))
 
 ;;; (color->string c) -> string?
 ;;;   c : color?
@@ -258,6 +257,52 @@
 (define color->string
   (lambda (c)
     (rgb->string (color->rgb c))))
+
+; +-----------------+------------------------------------------------
+; | RGB hex strings |
+; +-----------------+
+
+;;; (component->hex c) -> string?
+;;;   c : rgb-component?
+;;; Convert an RGB component to its two-digit hex code.
+(define component->hex
+  (lambda (c)
+    (let ([str (number->string c 16)])
+      (if (= (string-length str) 1)
+          (string-append " " str)
+          str))))
+
+;;; (rgb->hex c) -> string?
+;;;   c : rgb?
+;;; Convert an RGB color to a hex string.
+(define rgb->hex
+  (lambda (c)
+    (string-append (component->hex (rgb-red c))
+                   (component->hex (rgb-green c))
+                   (component->hex (rgb-blue c)))))
+
+;;; (color->hex c) -> string?
+;;;   c : color?
+;;; Convert any color to a hex string.
+(define color->hex
+  (lambda (c)
+    (rgb->hex (color->rgb c))))
+
+;;; (hex->component hex) -> rgb-component?
+;;;   hex : string?
+;;; Convert a two-digit hex value to the corresponding RGB component.
+(define hex->component
+  (lambda (hex)
+    (string->number hex 16)))
+
+;;; (hex->rgb hex) -> rgb?
+;;;   hex : string
+;;; Convert a six-digit hex string to the corresponding RGB color.
+(define hex->rgb
+  (lambda (hex)
+    (rgb (hex->component (substring hex 0 2))
+         (hex->component (substring hex 2 4))
+         (hex->component (substring hex 4 6)))))
 
 ; +------------+-----------------------------------------------------
 ; | HSV colors |
