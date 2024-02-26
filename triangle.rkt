@@ -42,7 +42,9 @@
      (lambda (img dir)
        (format "~a/solid-~a-~ax~a-isosceles-triangle.png"
                (or dir ".")
-               (color->color-name (image-color img))
+               (if (precise-polygon-colors)
+                   (color->hex (image-color img))
+                   (color->color-name (image-color img)))
                (isosceles-triangle-width img)
                (isosceles-triangle-height img))))]
   #:methods gen:img-make-desc
@@ -236,7 +238,9 @@
      (lambda (img dir)
        (format "~a/solid-~a-~a-equilateral-triangle.png"
                (or dir ".")
-               (color->color-name (image-color img))
+               (if (precise-polygon-colors)
+                   (color->hex (image-color img))
+                   (color->color-name (image-color img)))
                (equilateral-triangle-edge img))))]
   #:methods gen:img-make-desc
   [(define image-make-desc

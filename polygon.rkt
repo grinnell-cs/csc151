@@ -31,6 +31,22 @@
 
 (provide (all-defined-out))
 
+; +----------+-------------------------------------------------------
+; | Settings |
+; +----------+
+
+;;; (precise-polygon-colors [setting]) -> boolean?
+;;;   setting : boolean?
+;;; Get or set whether we use precise colors in file names.
+(define precise-polygon-colors
+  (let ([ppc #f])
+    (lambda params
+      (when (not (null? params))
+        (let ([setting (car params)])
+          (param-check! precise-polygon-colors 1 boolean? setting)
+          (set! ppc setting)))
+      ppc)))
+
 ; +----------------+-------------------------------------------------
 ; | Polygon basics |
 ; +----------------+

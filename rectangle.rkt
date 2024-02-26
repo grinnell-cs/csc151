@@ -31,22 +31,6 @@
 
 (provide (all-defined-out))
 
-; +----------+-------------------------------------------------------
-; | Settings |
-; +----------+
-
-;;; (precise-rectangle-colors [setting]) -> boolean?
-;;;   setting : boolean?
-;;; Get or set whether we use precise colors in file names.
-(define precise-rectangle-colors
-  (let ([prc #f])
-    (lambda params
-      (when (not (null? params))
-        (let ([setting (car params)])
-          (param-check! precise-rectangle-colors 1 boolean? setting)
-          (set! prc setting)))
-      prc)))
-
 ; +------------+-----------------------------------------------------
 ; | Rectangles |
 ; +------------+
@@ -58,7 +42,7 @@
      (lambda (img dir)
        (format "~a/solid-~a-~ax~a-rectangle.png"
                (or dir ".")
-               (if (precise-rectangle-colors)
+               (if (precise-polygon-colors)
                    (color->hex (image-color img))
                    (color->color-name (image-color img)))
                (round (rectangle-width img))
