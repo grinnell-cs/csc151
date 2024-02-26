@@ -269,7 +269,7 @@
   (lambda (c)
     (let ([str (number->string c 16)])
       (if (= (string-length str) 1)
-          (string-append " " str)
+          (string-append "0" str)
           str))))
 
 ;;; (rgb->hex c) -> string?
