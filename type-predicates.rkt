@@ -143,6 +143,12 @@
     (lambda (val)
       (>= val num))))
 
+;;; (at-least num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that holds only when its parameter is at
+;;; least `num` (i.e., greater than or equal to `num`).
+(define at-least greater-equal)
+
 ;;; (less-than num) -> procedure?
 ;;;   num : real?
 ;;; Returns a procedure that hold only when its parameter is less
@@ -154,10 +160,15 @@
 
 ;;; (less-equal num) -> procedure?
 ;;;   num : real?
-;;; Returns a procedure that hold only when its parameter is less
+;;; Returns a procedure that holds only when its parameter is less
 ;;; than or equal to `num`.
 (define less-equal
   (lambda (num)
     (lambda (val)
       (<= val num))))
+;;; (at-most num) -> procedure?
+;;;   num : real?
+;;; Returns a procedure that holds only when its parameter is at
+;;; most `num` (i.e., less than or equal to `num`).
+(define at-most less-equal)
 
