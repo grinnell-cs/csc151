@@ -496,3 +496,39 @@
     (param-check! vshift 2 real? voff)
     (%vshifted description #f #f #f img voff)))
 
+; +---------+--------------------------------------------------------
+; | Framing |
+; +---------+
+
+(sstruct %framed %transformed ()
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([subdesc (image-description (subimage img))])
+         (format "~a with a black frame around it" subdesc))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let ([subimg (subimage img)])
+         (2htdp:frame (image-picture subimg)))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'frame
+             (image-structure (subimage img)))))]
+  #:done)
+
+;;; (framed? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` was built with the `frame` command.
+(define framed? %framed?)
+
+;;; (frame img) -> image?
+;;;   img : image?
+;;; Add a frame around the image (generally for debugging).
+(define frame
+  (lambda (img [description #f])
+    (param-check! frame 1 image? img)
+    (%framed description #f #f #f img)))
+
