@@ -401,3 +401,96 @@
               img 
               left top width height)))
 
+; +---------+--------------------------------------------------------
+; | Shifted |
+; +---------+
+
+(sstruct %hshifted %transformed (hoff)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([subdesc (image-description (subimage img))]
+             [hoff (%hshifted-hoff img)])
+         (if (< hoff 0)
+             (format "~a, shifted left by ~a" subdesc (- hoff))
+             (format "~a, shifted right by ~a" subdesc hoff)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let ([subimg (subimage img)]
+             [hoff (%hshifted-hoff img)])
+         (if (< hoff 0)
+             (2htdp:crop (- hoff) 0 
+                         (image-width subimg) (image-height subimg)
+                         (image-picture subimg))
+             (2htdp:beside (2htdp:rectangle hoff 1 0 "white")
+                           (image-picture subimg))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'hshift
+             (image-structure (subimage img))
+             (%hshifted-hoff img))))]
+  #:done)
+
+(sstruct %vshifted %transformed (voff)
+  #:cloneable
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (let ([subdesc (image-description (subimage img))]
+             [voff (%vshifted-voff img)])
+         (if (< voff 0)
+             (format "~a, shifted up by ~a" subdesc (- voff))
+             (format "~a, shifted dow by ~a" subdesc voff)))))]
+  #:methods gen:img-make-pict
+  [(define image-make-pict
+     (lambda (img)
+       (let ([subimg (subimage img)]
+             [voff (%vshifted-voff img)])
+         (if (< voff 0)
+             (2htdp:crop 0 (- voff)
+                         (image-width subimg) (image-height subimg)
+                         (image-picture subimg))
+             (2htdp:above (2htdp:rectangle 1 voff 0 "white")
+                          (image-picture subimg))))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'vshift
+             (image-structure (subimage img))
+             (%vshifted-voff img))))]
+  #:done)
+
+;;; (shifted? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` is a shifted version of another image.
+(define shifted? (any-of %hshifted? %vshifted?))
+
+;;; (hshift img hoff [description]) -> image?
+;;;   img : image?
+;;;   hoff: real?
+;;;   description : string?
+;;; Shift `img` horizontally by `hoff`. If `hoff` is positive, shifts
+;;; to the right. If `hoff` is negative, shifts left, cutting off the
+;;; left edge (which is not recoverable).
+(define hshift
+  (lambda (img hoff [description #f])
+    (param-check! hshift 1 image? img)
+    (param-check! hshift 2 real? hoff)
+    (%hshifted description #f #f #f img hoff)))
+
+;;; (vshift img voff [description]) -> image?
+;;;   img : image?
+;;;   voff: real?
+;;;   description : string?
+;;; Shift `img` vertically by `voff`. If `voff` is positive, shifts
+;;; down. If `voff` is negative, shifts up, cutting off the top edge 
+;;; (which is not recoverable).
+(define vshift
+  (lambda (img voff [description #f])
+    (param-check! vshift 1 image? img)
+    (param-check! vshift 2 real? voff)
+    (%vshifted description #f #f #f img voff)))
+
