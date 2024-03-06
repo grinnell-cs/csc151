@@ -422,7 +422,8 @@
              [hoff (%hshifted-hoff img)])
          (if (< hoff 0)
              (2htdp:crop (- hoff) 0 
-                         (image-width subimg) (image-height subimg)
+                         (+ hoff (image-width subimg))
+                         (image-height subimg)
                          (image-picture subimg))
              (2htdp:beside (2htdp:rectangle hoff 1 0 "white")
                            (image-picture subimg))))))]
@@ -451,7 +452,8 @@
              [voff (%vshifted-voff img)])
          (if (< voff 0)
              (2htdp:crop 0 (- voff)
-                         (image-width subimg) (image-height subimg)
+                         (image-width subimg)
+                         (+ voff (image-height subimg))
                          (image-picture subimg))
              (2htdp:above (2htdp:rectangle 1 voff 0 "white")
                           (image-picture subimg))))))]
