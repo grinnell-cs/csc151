@@ -310,7 +310,7 @@
 
 (struct hsva (hue saturation value alpha)
   #:transparent
-  #:reflection-name 'rgb
+  #:reflection-name 'hsv
   #:methods gen:custom-write
   [(define write-proc
      (lambda (val port mode)
