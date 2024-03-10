@@ -76,6 +76,11 @@
            height
            color
            [description #f])
+    (param-check! solid-diamond 1 nonnegative-real? width)
+    (param-check! solid-diamond 2 nonnegative-real? height)
+    (param-check! solid-diamond 3 color? color)
+    (when description
+      (param-check! solid-diamond 4 string? description))
     (%solid-diamond description
                     #f
                     #f
@@ -135,6 +140,12 @@
            color
            line-width
            [description #f])
+    (param-check! outlined-diamond 1 nonnegative-real? width)
+    (param-check! outlined-diamond 2 nonnegative-real? height)
+    (param-check! outlined-diamond 3 color? color)
+    (param-check! outlined-diamond 4 positive-integer? line-width)
+    (when description
+      (param-check! outlined-diamond 5 string? description))
     (%outlined-diamond description
                        #f
                        #f

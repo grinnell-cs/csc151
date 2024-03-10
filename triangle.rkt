@@ -3,7 +3,7 @@
 ;;; File:
 ;;;   triangle.rkt
 ;;; Summary:
-;;;   A variety of procedures for working with diamonds.
+;;;   A variety of procedures for working with triangles.
 ;;; Author:
 ;;;   Samuel A. Rebelsky
 ;;;
@@ -87,6 +87,11 @@
            height
            color
            [description #f])
+    (param-check! solid-isosceles-triangle 1 nonnegative-real? width)
+    (param-check! solid-isosceles-triangle 2 nonnegative-real? height)
+    (param-check! solid-isosceles-triangle 3 color? color)
+    (when description
+      (param-check! solid-isosceles-triangle 4 string? description))
     (%solid-isosceles-triangle description
                                #f
                                #f
@@ -146,6 +151,12 @@
            color
            line-width
            [description #f])
+    (param-check! outlined-isosceles-triangle 1 nonnegative-real? width)
+    (param-check! outlined-isosceles-triangle 2 nonnegative-real? height)
+    (param-check! outlined-isosceles-triangle 3 color? color)
+    (param-check! outlined-isosceles-triangle 4 positive-integer? line-width)
+    (when description
+      (param-check! outlined-isosceles-triangle 5 string? description))
     (%outlined-isosceles-triangle description
                                   #f
                                   #f
@@ -268,6 +279,10 @@
 ;;; A solid equilateral triangle of the given edge length and color.
 (define solid-equilateral-triangle
   (lambda (edge color [description #f])
+    (param-check! solid-equilateral-triangle 1 nonnegative-real? edge)
+    (param-check! solid-equilateral-triangle 2 color? color)
+    (when description
+      (param-check! solid-equilateral-triangle 3 string? description))
     (let ([width edge]
           [height (* sqrt-3 1/2 edge)])
       (%solid-equilateral-triangle description
@@ -323,6 +338,11 @@
 ;;; an outline of `line-width`. The inner triangle is transparent.
 (define outlined-equilateral-triangle
   (lambda (edge color line-width [description #f])
+    (param-check! outlined-equilateral-triangle 1 nonnegative-real? edge)
+    (param-check! outlined-equilateral-triangle 2 color? color)
+    (param-check! outlined-equilateral-triangle 3 positive-real? line-width)
+    (when description
+      (param-check! outlined-equilateral-triangle 4 string? description))
     (let ([width edge]
           [height (* sqrt-3 1/2 edge)])
       (%outlined-equilateral-triangle description

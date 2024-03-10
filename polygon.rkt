@@ -238,6 +238,11 @@
            color
            line-width
            [description #f])
+    (param-check! outlined-polygon 1 (list-of pt?) points)
+    (param-check! outlined-polygon 2 color? color)
+    (param-check! outlined-polygon 3 positive-integer? line-width)
+    (when description
+      (param-check! outlined-polygon 4 string? description))
     (let ([color (color->rgb color)])
       (%outlined-polygon description
                          #f

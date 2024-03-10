@@ -129,6 +129,11 @@
            height
            color
            [description #f])
+    (param-check! solid-ellipse 1 nonnegative-real? width)
+    (param-check! solid-ellipse 2 nonnegative-real? height)
+    (param-check! solid-ellipse 3 color? color)
+    (when description
+      (param-check! solid-ellipse 4 string? description))
     (let ([color (color->rgb color)])
       (%solid-ellipse description
                       #f
@@ -199,6 +204,12 @@
            color
            line-width
            [description #f])
+    (param-check! outlined-ellipse 1 nonnegative-real? width)
+    (param-check! outlined-ellipse 2 nonnegative-real? height)
+    (param-check! outlined-ellipse 3 color? color)
+    (param-check! outlined-ellipse 4 positive-integer? line-width)
+    (when description
+      (param-check! outlined-ellipse 5 string? description))
     (let ([color (color->rgb color)])
       (%outlined-ellipse description
                          #f

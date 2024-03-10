@@ -71,14 +71,18 @@
 ;;;   description : string?
 ;;; Create a solid circle with the given diameter and color.
 (define solid-circle
-  (lambda (diam color [description #f])
+  (lambda (diameter color [description #f])
+    (param-check! solid-circle 1 nonnegative-real? diameter)
+    (param-check! solid-circle 2 color? color)
+    (when description
+      (param-check! solid-circle 3 string? description))
     (%solid-circle description
                    #f
                    #f
                    #f
                    color
-                   diam
-                   diam)))
+                   diameter
+                   diameter)))
 
 (sstruct %outlined-circle %outlined-ellipse ()
   #:cloneable
@@ -114,14 +118,19 @@
 ;;;   description : string?
 ;;; Create an outlined circle with the given diameter and color.
 (define outlined-circle
-  (lambda (diam color line-width [description #f])
+  (lambda (diameter color line-width [description #f])
+    (param-check! outlined-circle 1 nonnegative-real? diameter)
+    (param-check! outlined-circle 2 color? color)
+    (param-check! outlined-circle 3 positive-real? line-width)
+    (when description
+      (param-check! outlined-circle 4 string? description))
     (%outlined-circle description
                       #f
                       #f
                       #f
                       color
-                      diam
-                      diam
+                      diameter
+                      diameter
                       line-width)))
 
 ;;; (circle? img) -> boolean?

@@ -66,6 +66,10 @@
 ;;; Create a solid square with the given side length and color.
 (define solid-square
   (lambda (side color [description #f])
+    (param-check! solid-square 1 nonnegative-real? side)
+    (param-check! solid-square 2 color? color)
+    (when description
+      (param-check! solid-square 3 string? description))
     (let ([color (color->rgb color)]
           [points (list (pt 0 0) (pt side 0) (pt side side) (pt 0 side))])
       (%solid-square description
@@ -109,6 +113,11 @@
 ;;; Create an outlined square with the given side length and color.
 (define outlined-square
   (lambda (side color line-width [description #f])
+    (param-check! outlined-square 1 nonnegative-real? side)
+    (param-check! outlined-square 2 color? color)
+    (param-check! outlined-square 3 positive-real? line-width)
+    (when description
+      (param-check! outlined-square 4 string? description))
     (let ([color (color->rgb color)]
           [points (list (pt 0 0) (pt side 0) (pt side side) (pt 0 side))])
       (%outlined-square description

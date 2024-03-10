@@ -88,6 +88,11 @@
            height
            color
            [description #f])
+    (param-check! solid-rectangle 1 nonnegative-real? width)
+    (param-check! solid-rectangle 2 nonnegative-real? height)
+    (param-check! solid-rectangle 3 color? color)
+    (when description
+      (param-check! solid-rectangle 4 string? description))
     (let ([color (color->rgb color)]
           [points (list (pt 0 0) (pt width 0) (pt width height) (pt 0 height))])
       (%solid-rectangle description
@@ -165,14 +170,12 @@
            color
            line-width
            [description #f])
-    (when (not (nonnegative-real? width))
-      (error 'outlined-rectangle "expects a nonnegative width, received ~a" width))
-    (when (not (nonnegative-real? height))
-      (error 'outlined-rectangle "expects a nonnegative height, received ~a" height))
-    (when (not (color? color))
-      (error 'outlined-rectangle "expects a color, received ~a" color))
-    (when (not (positive-integer? line-width))
-      (error 'outlined-rectangle "expects a positive integer, received ~a" line-width))
+    (param-check! outlined-rectangle 1 nonnegative-real? width)
+    (param-check! outlined-rectangle 2 nonnegative-real? height)
+    (param-check! outlined-rectangle 3 color? color)
+    (param-check! outlined-rectangle 4 positive-integer? line-width)
+    (when description
+      (param-check! outlined-rectangle 5 string? description))
     (let ([color (color->rgb color)]
           [points (list (pt 0 0) (pt width 0) (pt width height) (pt 0 height))])
       (%outlined-rectangle description
