@@ -280,7 +280,7 @@
                          (color->2htdp (image-color img)))
           left top
           "left" "top"
-          (transparent-rectangle width height)))))]
+          (transparent-2htdp-rectangle width height)))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
      (lambda (img)

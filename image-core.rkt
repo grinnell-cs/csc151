@@ -207,11 +207,11 @@
           (and (transparent? (bitmap-get-pixel bm col row))
                (kernel (+ col 1)))))))
 
-;;; (transparent-rectangle width height) -> 2htdp:image?
+;;; (transparent-2htdp-rectangle width height) -> 2htdp:image?
 ;;;   width : nonnegative-integer?
 ;;;   height : nonnegative-integer?
 ;; Make a width-by-height transparent rectangle.
-(define transparent-rectangle
+(define transparent-2htdp-rectangle
   (lambda (width height)
     (2htdp:rectangle width height "solid" (2htdp:color 0 0 0 0))))
 
@@ -229,7 +229,7 @@
                 ; (displayln (list 'hprocess-kernel minw propw hoff))
                 (if (<= propw minw)
                     (cons minw hoff)
-                    (let* ([bg (transparent-rectangle propw height)]
+                    (let* ([bg (transparent-2htdp-rectangle propw height)]
                            [tmp (2htdp:overlay/offset img hoff 0 bg)]
                            [bm (2htdp->bitmap tmp)]
                            [drop-left? (column-transparent? bm 0)]
@@ -266,7 +266,7 @@
                 ; (displayln (list 'vprocess-kernel minh proph voff))
                 (if (<= proph minh)
                     (cons minh voff)
-                    (let* ([bg (transparent-rectangle width proph)]
+                    (let* ([bg (transparent-2htdp-rectangle width proph)]
                            [tmp (2htdp:overlay/offset img hoff voff bg)]
                            [bm (image->bitmap tmp)]
                            [drop-top? (row-transparent? bm 0)]
@@ -306,7 +306,7 @@
              [voff (cdr height-plus-voff)])
         (2htdp:overlay/offset img
                               hoff voff
-                              (transparent-rectangle width height))))))
+                              (transparent-2htdp-rectangle width height))))))
 
 ; +------+-----------------------------------------------------------
 ; | Pens |

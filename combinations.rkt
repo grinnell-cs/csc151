@@ -257,7 +257,7 @@
     ; Then overlay with the offset.
     (let* ([w (apply max (map image-width images))]
            [h (apply max (map image-height images))]
-           [bg (transparent-rectangle w h)])
+           [bg (transparent-2htdp-rectangle w h)])
       (let ([hfun (cond
                     [(equal? halignment "left")
                      (lambda (img) 0)]
@@ -533,7 +533,7 @@
            [tmp (2htdp:crop 0 0 w h
                             (2htdp:overlay/align "left" "top"
                                                  (image-picture img2)
-                                                 (transparent-rectangle w h)))]
+                                                 (transparent-2htdp-rectangle w h)))]
            [bits2 (image-bitmap (2htdp->bitmap tmp))]
            [result (bitmap w h (or description
                                    (format "the result of subtracting ~a from ~a"

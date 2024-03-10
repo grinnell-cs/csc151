@@ -161,8 +161,8 @@
                                              "round"
                                              "miter"))])
          (2htdp:overlay tmp
-                        (transparent-rectangle (+ (ellipse-width img) lw lw)
-                                               (+ (ellipse-height img) lw lw))))))]
+                        (transparent-2htdp-rectangle (+ (ellipse-width img) lw lw)
+                                                     (+ (ellipse-height img) lw lw))))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
      (lambda (img)
