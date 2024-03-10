@@ -94,6 +94,12 @@
            (pred1? (car val))
            (pred2? (cdr val))))))
 
+;;; (positive-real? val) -> boolean?
+;;;   val : any?
+;;; Determines if `val` is a positive real number.
+(define positive-real?
+  (all-of real? positive?))
+
 ;;; (param-error proc-name param-type param-num param-name value) -> void?
 ;;;   proc-name : symbol?
 ;;;   param-type : symbol?
