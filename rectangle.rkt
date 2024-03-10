@@ -271,3 +271,15 @@
                  mode
                  color-or-pen)))
 
+; +---------------+--------------------------------------------------
+; | Miscellaneous |
+; +---------------+
+
+;;; (transparent-rectangle width height) -> image?
+;;;   width : non-negative-integer?
+;;;   height : non-negative-integer?
+;;; Make a transparent rectangle of the given size.
+(define transparent-rectangle
+  (lambda (width height)
+    (solid-rectangle width height (rgb 0 0 0 0))))
+
