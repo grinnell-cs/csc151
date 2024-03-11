@@ -16,12 +16,47 @@
 ;;;   (verbose-let* (name-value-pairs) exp1 ...)
 ;;;      Assign each value to the corresponding name, in sequence.
 ;;; Citations:
-;;;   Based closely on code written by Samuel A. Rebelsky in about
+;;;   Based closely on code written by Samuel A. Rebelsky in or about
 ;;;   2006.
 
 (provide verbose-define)
 (provide verbose-let)
 (provide verbose-let*)
+
+; +-------------+----------------------------------------------------
+; | Indentation |
+; +-------------+
+
+;;; indentation : string?
+;;; The current amount of indentation.
+(define indentation "")
+
+;;; (indent!) -> void?
+;;; Add some indentation.
+(define indent!
+  (lambda ()
+    (display indentation)))
+
+;;; (increase-indentation!) -> void?
+;;; Increase the indentation.
+(define increase-indentation!
+  (lambda ()
+    (set! indentation (string-append indentation "  "))))
+
+;;; (decrease-indentation!) -> void?
+;;; Decrease the indentation.
+(define decrease-indentation!
+  (lambda ()
+    (when (>= (string-length indentation) 2)
+      (set! indentation (substring indentation 2)))))
+
+;;; (report str) -> void?
+;;;   str : string?
+;;; Report something.
+(define report
+  (lambda (str)
+    (indent!)
+    (displayln str)))
 
 ; +--------+---------------------------------------------------------------
 ; | Macros |
@@ -48,8 +83,25 @@
   (syntax-rules ()
     [(verbose-define name exp)
      (begin
+       (report "Beginning define")
+       (increase-indentation!)
        (report-binding name exp "define")
-       (define name exp))]))
+       (define name exp)
+       (decrease-indentation!)
+       (report "Ending define"))]))
+
+(define-syntax verbose-define/alt
+  (syntax-rules ()
+    [(verbose-define name exp)
+     (begin
+       (report (format "Starting definition of ~a" 'name))
+       (increase-indentation!)
+       (report (format "Evaluating ~a" 'exp))
+       (define name null)
+       (let ([_tmp_ exp])
+         (set! name _tmp_)
+         (decrease-indentation!)
+         (report (format "Binding ~a to ~a with define" 'a _tmp_))))]))
 
 ;;; Procedure (Macro):
 ;;;   verbose-let
@@ -71,12 +123,12 @@
   (syntax-rules ()
     [(verbose-let definitions body ...)
      (begin
-       (display "Beginning let.")
-       (newline)
+       (report "Beginning let")
+       (increase-indentation!)
        (display-let-bindings definitions)
        (let ([result (let definitions body ...)])
-         (display "Ending let.")
-         (newline)
+         (decrease-indentation!)
+         (report "Ending let")
          result))]))
 
 ;;; Procedure (Macro):
@@ -103,11 +155,11 @@
   (syntax-rules ()
     [(verbose-let* definitions body ...)
      (begin
-       (display "Beginning let*")
-       (newline)
+       (report "Beginning let*")
+       (increase-indentation!)
        (let ((result (verbose-let*-helper definitions body ...)))
-         (display "Ending let*")
-         (newline)
+         (decrease-indentation!)
+         (report "Ending let*")
          result))]))
 
 (define-syntax verbose-let*-helper
@@ -116,10 +168,9 @@
      (let () e0 ...)]
     [(verbose-let*-helper ((n0 v0) (n1 v1) ...) e0 ...)
      (begin
-       (report-binding n0 v0 "let*.")
+       (report-binding n0 v0 "let*")
        (let ((n0 v0)) 
          (verbose-let*-helper ((n1 v1) ...) e0 ...)))]))
-
 
 ; +---------+--------------------------------------------------------------
 ; | Helpers |
@@ -128,14 +179,8 @@
 (define-syntax report-binding
   (syntax-rules ()
     ((_ name exp how)
-     (begin
-       (display "Binding ")
-       (write 'name)
-       (display " to ")
-       (write 'exp)
-       (display " with ")
-       (display how)
-       (newline)))))
+     (report (format "Binding ~a to ~a with ~a"
+                     'name 'exp how)))))
 
 (define-syntax display-let-bindings
   (syntax-rules ()
@@ -143,7 +188,6 @@
      (display ""))
     ((_ ((n1 v1) (n2 v2) ...))
      (begin
-       (display "  ")
        (report-binding n1 v1 "let")
        (display-let-bindings ((n2 v2) ...))))))
 
