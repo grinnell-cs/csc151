@@ -46,8 +46,8 @@
   #:methods gen:img-make-pict
   [(define image-make-pict
      (lambda (img)
-       (2htdp:rotate (rotated-angle img)
-                     (image-picture (subimage img)))))]
+       (trim (2htdp:rotate (rotated-angle img)
+                           (image-picture (subimage img))))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
      (lambda (img)
@@ -532,3 +532,148 @@
     (param-check! frame 1 image? img)
     (%framed description #f #f #f img)))
 
+; +---------+--------------------------------------------------------
+; | Helpers |
+; +---------+
+
+;;; (trim img) -> 2htdp:image?
+;;;   img -> 2htdp:image?
+;;; Trim any transparent lines on the sides of the image.
+;;;
+;;; Used to handle issues discovered in my approach to `overlay`
+;;; when combined with rotation.
+(define trim
+  (lambda (img)
+    (let* ([pixels (list->vector (2htdp:image->color-list img))]
+           [width (2htdp:image-width img)]
+           [height (2htdp:image-height img)]
+           [first-row (first-solid-row pixels 
+                                       width height 0 
+                                       0 width)]
+           [last-row (last-solid-row pixels 
+                                     width height 
+                                     (- height 1) 
+                                     0 width)]
+           [first-col (first-solid-col pixels
+                                       width height
+                                       0
+                                       (max first-row 0)
+                                       (min last-row height))]
+           [last-col (last-solid-col pixels
+                                     width height
+                                     (- width 1)
+                                     (max first-row 0)
+                                     (min last-row height))]
+           [hoff (min first-col (- width last-col))]
+           [voff (min first-row (- height last-row))])
+      (2htdp:crop hoff
+                  voff 
+                  (- width hoff hoff)
+                  (- height voff voff)
+                  img))))
+
+;;; (first-solid-col pixels width height col startcol endcol)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   col : (all-of nonnegative-integer? (less-than width))
+;;;   startcol : (all-of nonnegative-integer? (less-than height))
+;;;   endcol : (all-of nonegative-integer? (at-least startcol) (less-than (image-height img)))
+;;; Find the first column with a non-transparent color, moving right
+;;; stating with col.
+(define first-solid-col
+  (lambda (pixels width height col startrow endrow)
+    ; (displayln (list 'first-solid-col 'pixels width height col startrow endrow))
+    (if (and (< col width)
+             (2htdp-col-transparent? pixels width height col startrow endrow))
+        (first-solid-col pixels width height (+ col 1) startrow endrow)
+        col)))
+
+;;; (first-solid-row pixels width height row startcol endcol)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   row : (all-of nonnegative-integer? (less-than height))
+;;;   startcol : (all-of nonnegative-integer? (less-than width))
+;;;   endcol : (all-of nonegative-integer? (at-least startcol) width)
+;;; Find the first row with a non-transparent color, moving down start at row.
+(define first-solid-row
+  (lambda (pixels width height row startcol endcol)
+    (if (and (< row height)
+             (2htdp-row-transparent? pixels width height row startcol endcol))
+        (first-solid-row pixels width height (+ row 1) startcol endcol)
+        row)))
+
+;;; (last-solid-col pixels width height col startcol endcol)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   col : (all-of nonnegative-integer? (less-than width))
+;;;   startcol : (all-of nonnegative-integer? (less-than height))
+;;;   endcol : (all-of nonegative-integer? (at-least startcol) (less-than (image-height img)))
+;;; Find the last column with a non-transparent color, moving left starting
+;;; with col.
+(define last-solid-col
+  (lambda (pixels width height col startrow endrow)
+    (if (and (>= col 0)
+             (2htdp-col-transparent? pixels width height col startrow endrow))
+        (last-solid-col pixels width height (- col 1) startrow endrow)
+        col)))
+
+;;; (last-solid-row pixels width height row startcol endcol)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   row : (all-of nonnegative-integer? (less-than height))
+;;;   startcol : (all-of nonnegative-integer? (less-than width)
+;;;   endcol : (all-of nonegative-integer? (at-least startcol) (less-than width))
+;;; Find the last row with a non-transparent color, moving up, starting at row.
+(define last-solid-row
+  (lambda (pixels width height row startcol endcol)
+    (if (and (>= row 0)
+             (2htdp-row-transparent? pixels width height row startcol endcol))
+        (last-solid-row pixels width height (- row 1) startcol endcol)
+        row)))
+
+;;; (2htdp-row-transparent? pixels width height row startcol endcol)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   row : (all-of nonnegative-integer? (less-than height))
+;;;   startcol : (all-of nonnegative-integer? (less-than (image-width img)))
+;;;   endcol : (all-of nonegative-integer? (at-least startcol) (less-than (image-width img)))
+;;; Determine if the given row is transparent.
+(define 2htdp-row-transparent?
+  (lambda (pixels width height row startcol endcol)
+    (let kernel ([col startcol]
+                 [pos (+ startcol (* row width))])
+      (or (>= col endcol)
+          (and (zero? (2htdp:color-alpha (vector-ref pixels pos)))
+               (kernel (+ col 1) (+ pos 1)))))))
+
+;;; (2htdp-col-transparent? pixels width height col startrow endrow)
+;;;   pixels : (vector-of rgb?)
+;;;   width : positive-integer?
+;;;   height : positive-integer?
+;;;   col : (all-of nonnegative-integer? (less-than width))
+;;;   startrow : (all-of nonnegative-integer? (less-than (image-height img)))
+;;;   endrow : (all-of nonegative-integer? (at-least startrow) (less-than (image-height img)))
+;;; Determine if the given row is transparent.
+(define 2htdp-col-transparent?
+  (lambda (pixels width height col startrow endrow)
+    (let kernel ([row startrow]
+                 [pos (+ col (* startrow width))])
+      (or (>= row endrow)
+          (and (zero? (2htdp:color-alpha (vector-ref pixels pos)))
+               (kernel (+ row 1) (+ pos width)))))))
+
+;;; (get-pixel pixels col row width height) -> rgb?
+;;;   pixels : (vector-of rgb?)
+;;;   col : (all-of nonnegative-integer? (less-than width))
+;;;   row : (all-of nonnegative-integer? (less-than-height))
+;;;   width : nonnegative-integer?
+;;;   height : nonnegative-integer?
+;;; Gets the given pixel from the pixel grid.
+(define get-pixel
+  (lambda (pixels col row width height)
+    (vector-ref pixels (+ col (* row width)))))
