@@ -775,7 +775,7 @@
 ;;; In contrast to most other image-making procedures, which do not
 ;;; require a description, `pixels->image` requires a description beacuse
 ;;; a useful description cannot easily be created.
-(define bits->image
+(define pixels->image
   (lambda (pixels width height description)
     (param-check! pixels->image 1 (vector-of rgb?) pixels)
     (param-check! pixels->image 2 positive-integer? width)
