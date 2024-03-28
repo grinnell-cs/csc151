@@ -56,7 +56,14 @@
 ;;;   pred? : unary-predicate?
 ;;; Builds a unary predicate that verifies that its parameter is a vector
 ;;; all of whose elements match `pred?`.
-(define vector-of vectorof)
+(define vector-of 
+  (lambda (pred?)
+    (lambda (val)
+      (and (vector? val)
+           (let kernel ([pos (- (vector-length val) 1)])
+             (or (< pos 0)
+                 (and (pred? (vector-ref val pos))
+                      (kernel (- pos 1)))))))))
 
 ;;; (nonnegative? val) -> boolean?
 ;;;   val : real?
@@ -178,3 +185,12 @@
 ;;; most `num` (i.e., less than or equal to `num`).
 (define at-most less-equal)
 
+;;; (has-length len) -> predicate?
+;;;   len : non-negative-integer?
+;;; Returns a predicate that holds only when its parameter is a list
+;;; of the specified length or a vector of the specified length.
+(define has-length
+  (lambda (len)
+    (lambda (val)
+      (or (and (list? val) (= len (length val)))
+          (and (vector? val) (= len (vector-length val)))))))
