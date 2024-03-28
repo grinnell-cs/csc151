@@ -758,34 +758,33 @@
                width
                height))))
 
-;;; (image->bits img) -> (vector-of rgb?)
+;;; (image->pixels img) -> (vector-of rgb?)
 ;;;   img : image?
 ;;; Get the bits associated with img.
-(define image->bits
+(define image->pixels
   (lambda (img)
     (vector-copy (image-bitmap img))))
 
-;;; (bits->image bits width height [description]) -> image?
-;;;   bits : (vector-of rgb?)
+;;; (pixels->image bits width height [description]) -> image?
+;;;   pixels: (all-of (vector-of rgb?) (has-length (* width height)))
 ;;;   width : postive-integer?
 ;;;   height : positive-integer?
 ;;;   description : string?
-;;; Create a bitmap image from a vector of colors.  Note that `bits`
-;;; must have a length of `(* width height)`.
+;;; Create a bitmap image from a vector of colors.  
 ;;;
 ;;; In contrast to most other image-making procedures, which do not
-;;; require a description, `bits->image` requires a description beacuse
+;;; require a description, `pixels->image` requires a description beacuse
 ;;; a useful description cannot easily be created.
 (define bits->image
-  (lambda (bits width height description)
-    (param-check! bits->image 1 (vector-of rgb?) bits)
-    (param-check! bits->image 2 positive-integer? width)
-    (param-check! bits->image 3 positive-integer? height)
-    (param-check! bits->image 1 (has-length (* width height)) bits)
-    (param-check! bits->image 4 string? description)
+  (lambda (pixels width height description)
+    (param-check! pixels->image 1 (vector-of rgb?) pixels)
+    (param-check! pixels->image 2 positive-integer? width)
+    (param-check! pixels->image 3 positive-integer? height)
+    (param-check! pixels->image 1 (has-length (* width height)) pixels)
+    (param-check! pixels->image 4 string? description)
     (%bitmap description
              #f
-             (vector-copy bits)
+             (vector-copy pixels)
              #f
              width
              height)))
