@@ -1,7 +1,7 @@
 #lang racket
 
 ;;; File:
-;;;   image.rkt
+;;;   image-core.rkt
 ;;; Summary:
 ;;;   A variety of procedures for working with images.
 ;;; Author:
@@ -387,13 +387,13 @@
            (markdown-image img)))
        (write (image-picture img) port)))]
   #:methods gen:equal+hash
-  [(define equal-proc 
+  [(define equal-proc
      (lambda (a b equal?-recur)
        (equal?-recur (image-picture a) (image-picture b))))
-   (define hash-proc 
+   (define hash-proc
      (lambda (a hash-recur)
        (hash-recur (image-picture a))))
-   (define hash2-proc 
+   (define hash2-proc
      (lambda (a hash2-recur)
        (hash2-recur (image-picture a))))]
   #:done)
@@ -758,6 +758,38 @@
                width
                height))))
 
+;;; (image->bits img) -> (vector-of rgb?)
+;;;   img : image?
+;;; Get the bits associated with img.
+(define image->bits
+  (lambda (img)
+    (vector-copy (image-bitmap img))))
+
+;;; (bits->image bits width height [description]) -> image?
+;;;   bits : (vector-of rgb?)
+;;;   width : postive-integer?
+;;;   height : positive-integer?
+;;;   description : string?
+;;; Create a bitmap image from a vector of colors.  Note that `bits`
+;;; must have a length of `(* width height)`.
+;;;
+;;; In contrast to most other image-making procedures, which do not
+;;; require a description, `bits->image` requires a description beacuse
+;;; a useful description cannot easily be created.
+(define bits->image
+  (lambda (bits width height description)
+    (param-check! bits->image 1 (vector-of rgb?) bits)
+    (param-check! bits->image 2 positive-integer? width)
+    (param-check! bits->image 3 positive-integer? height)
+    (param-check! bits->image 1 (has-length (* width height)) bits)
+    (param-check! bits->image 4 string? description)
+    (%bitmap description
+             #f
+             (vector-copy bits)
+             #f
+             width
+             height)))
+
 ; +--------+---------------------------------------------------------
 ; | Shapes |
 ; +--------+
@@ -1027,7 +1059,7 @@
             [else
              (let* ([lastcol? (>= col (- w 1))]
                     [lastrow? (>= row (- h 1))]
-                    [northwest (if (or (zero? row) (zero? col)) 
+                    [northwest (if (or (zero? row) (zero? col))
                                   default
                                   (vector-ref bits (- pos 1)))]
                     [north (if (zero? row)
@@ -1051,8 +1083,8 @@
                     [southeast (if (or lastrow? lastcol?)
                                    default
                                    (vector-ref bits (+ pos w 1)))])
-               (vector-set! bits 
-                            pos 
+               (vector-set! bits
+                            pos
                             (make-color (vector-ref bits pos)
                                         col row
                                         northwest north northeast
