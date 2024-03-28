@@ -179,6 +179,7 @@
   (lambda (num)
     (lambda (val)
       (<= val num))))
+
 ;;; (at-most num) -> procedure?
 ;;;   num : real?
 ;;; Returns a procedure that holds only when its parameter is at
@@ -194,3 +195,10 @@
     (lambda (val)
       (or (and (list? val) (= len (length val)))
           (and (vector? val) (= len (vector-length val)))))))
+
+;;; (nonempty? lst) -> boolean?
+;;;   lst : list?
+;;; Determine if lst is nonempty.
+(define nonempty?
+  (lambda (lst)
+    (not (null? lst))))
