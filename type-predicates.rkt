@@ -202,3 +202,10 @@
 (define nonempty?
   (lambda (lst)
     (not (null? lst))))
+
+;;; (nonempty-vector? vec) -> boolean?
+;;;   vec : vector?
+;;; Determine if a vector is nonempty.
+(define nonempty-vector?
+  (lambda (vec)
+    (> (vector-length vec) 0)))
