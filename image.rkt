@@ -28,6 +28,7 @@
 (require "line.rkt")
 
 (require "image-core.rkt")
+(require "image-text.rkt")
 (require "polygon.rkt")
 (require "rectangle.rkt")
 (require "square.rkt")
@@ -40,6 +41,7 @@
 
 (provide 
   (all-from-out "image-core.rkt")
+  (all-from-out "image-text.rkt")
   (all-from-out "polygon.rkt")
   (all-from-out "rectangle.rkt")
   (all-from-out "square.rkt")
