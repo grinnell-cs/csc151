@@ -323,5 +323,6 @@
 (define word-char?
   (lambda (ch)
     (or (char-alphabetic? ch)
-        (char-numeric? ch))))
+        (char-numeric? ch)
+        (member ch (string->list "'’-")))))
 
