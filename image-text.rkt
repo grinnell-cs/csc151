@@ -145,4 +145,8 @@
 ;;; the specified font (if given) or the default font (if not given).
 (define text
   (lambda (string size color [font (default-font)])
-    (%text #f #f #f #f color string size font)))
+    (%text #f #f #f #f 
+           color 
+           string 
+           (min 255 (max 1 size ))
+           font)))
