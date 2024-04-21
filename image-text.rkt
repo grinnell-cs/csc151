@@ -150,3 +150,22 @@
            string 
            (min 255 (max 1 size ))
            font)))
+
+; +----------------------------+-------------------------------------
+; | Additional text procedures |
+; +----------------------------+
+
+;; (find-text str img) -> (or text? #f)
+;;;   img : image?
+;;; Finds a text block that contains the given string, if there is
+;;; one.
+(define find-text
+  (lambda (str img)
+    (or (and (text? img)
+             (string-ci=? str (text-string img))
+             img)
+        (and (transformed? img)
+             (find-text str (subimage img)))
+        (and (compound? img)
+             (ormap (cut (find-text str <>)) (subimages img))))))
+
