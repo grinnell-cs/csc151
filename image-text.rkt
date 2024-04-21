@@ -167,5 +167,5 @@
         (and (transformed? img)
              (find-text str (subimage img)))
         (and (compound? img)
-             (ormap (cut (find-text str <>)) (subimages img))))))
+             (ormap (lambda (i) (find-text str i)) (subimages img))))))
 
