@@ -50,5 +50,6 @@
   (all-from-out "triangle.rkt")
   (all-from-out "ellipse.rkt")
   (all-from-out "circle.rkt")
+  (all-from-out "curve.rkt")
   (all-from-out "transformations.rkt")
   (all-from-out "combinations.rkt"))
