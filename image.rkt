@@ -36,6 +36,7 @@
 (require "triangle.rkt")
 (require "ellipse.rkt")
 (require "circle.rkt")
+(require "curve.rkt")
 (require "transformations.rkt")
 (require "combinations.rkt")
 
