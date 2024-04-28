@@ -800,7 +800,8 @@
 ;;;   bits : (vector-of rgb?)
 ;;;   picture : 2htdp:image?
 ;;; A shape; intended primarily as a placeholder in the hierarchy.
-(sstruct %shape %basic-image ())
+(sstruct %shape %basic-image ()
+  #:reflection-name 'shape)
 
 (define shape? %shape?)
 
