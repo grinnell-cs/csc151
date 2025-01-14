@@ -517,6 +517,10 @@
             yside
             y)))
 
+; +---------------+--------------------------------------------------
+; | Miscellaneous |
+; +---------------+
+
 ;;; (image-subtract img1 img2 [description]) -> image?
 ;;;   img1 : image?
 ;;;   img2 : image?
@@ -550,3 +554,28 @@
             (kernel (- pos 1)))))
       result)))
 
+;;; (white->transparent img) -> image?
+;;;   img : image?
+;;; Create a new version of img in which all of the white pixels are made transparent.
+(define white->transparent
+  (lambda (img [description #f])
+    (let* ([w (image-width img)]
+           [h (image-height img)]
+           [bits (image-bitmap img)]
+           [result (bitmap w h (or description
+                                   (format "~a with all white pixels made transparent"
+                                           (image-description img))))]
+           [newbits (image-bitmap result)]
+           [whiteish (- (+ 255 255 255) 5)])
+      (let kernel ([pos (- (vector-length bits) 1)])
+        (when (>= pos 0)
+          (let ([pixel (vector-ref bits pos)])
+            (vector-set! newbits pos
+                         (if (>= (+ (rgb-red pixel) 
+                                    (rgb-green pixel) 
+                                    (rgb-blue pixel))
+                                 whiteish)
+                             (rgb 0 0 0 0)
+                             pixel)))
+          (kernel (- pos 1))))
+      result)))
