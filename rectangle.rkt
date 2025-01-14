@@ -173,7 +173,7 @@
     (param-check! outlined-rectangle 1 nonnegative-real? width)
     (param-check! outlined-rectangle 2 nonnegative-real? height)
     (param-check! outlined-rectangle 3 color? color)
-    (param-check! outlined-rectangle 4 positive-integer? line-width)
+    (param-check! outlined-rectangle 4 positive-real? line-width)
     (when description
       (param-check! outlined-rectangle 5 string? description))
     (let ([color (color->rgb color)]
