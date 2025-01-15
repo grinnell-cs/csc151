@@ -38,7 +38,7 @@
 ; brick-red is used for four-circles
 (define brick-red (rgb 164 17 17))
 
-; bright-blue is used for missing-oval and stripes
+; bright-blue is used for diagonal-oval and stripes
 (define bright-blue (rgb 30 145 255))
 
 ; dark-orange is used for three-rectangles
@@ -62,10 +62,10 @@
 ; red is used for both sides of two-wedges
 (define red (rgb 240 0 0))
 
-; yellow is used for missing-oval
+; yellow is used for diagonal-oval
 (define yellow (rgb 225 225 0))
 
-; yellow-green is used for missing-oval and wedges
+; yellow-green is used for diagonal-oval and wedges
 (define yellow-green (rgb 200 220 50))
 
 ; +--------+---------------------------------------------------------
@@ -118,12 +118,12 @@
 (define three-rects-b
   (make-three-rects-b (default-size)))
 
-;;; (missing-oval bgcolor fgcolor size) -> image?
+;;; (diagonal-oval bgcolor fgcolor size) -> image?
 ;;;   bgcolor : color?
 ;;;   fgcolor : color?
 ;;;   size : positive-integer?
 ;;; Create a size-by-size layers piece with the given colors.
-(define missing-oval
+(define diagonal-oval
   (lambda (bgcolor fgcolor size)
     (let* ([sqrt2 (sqrt 2)]
            [background (solid-square (/ (* size 2) sqrt2) bgcolor)]
@@ -146,23 +146,23 @@
             size
             size))))
 
-;;; (make-missing-oval-a size) -> image?
+;;; (make-diagonal-oval-a size) -> image?
 ;;;   size : positive-integer?
 ;;; Create a version of the standard missing-overal piece (yellow on green).
-(define make-missing-oval-a
-  (cut (missing-oval yellow-green yellow <>)))
+(define make-diagonal-oval-a
+  (cut (diagonal-oval yellow-green yellow <>)))
 
-;;; (make-missing-oval-b size) -> image?
+;;; (make-diagonal-oval-b size) -> image?
 ;;;   size : positive-integer?
 ;;; Create a version of the standard missing-overal piece (yellow on bright blue).
-(define make-missing-oval-b
-  (cut (missing-oval bright-blue yellow <>)))
+(define make-diagonal-oval-b
+  (cut (diagonal-oval bright-blue yellow <>)))
 
-(define missing-oval-a
-  (make-missing-oval-a (default-size)))
+(define diagonal-oval-a
+  (make-diagonal-oval-a (default-size)))
 
-(define missing-oval-b
-  (make-missing-oval-b (default-size)))
+(define diagonal-oval-b
+  (make-diagonal-oval-b (default-size)))
 
 ;;; (stripes bgcolor fgcolor size) -> image?
 ;;;   bgcolor : color?
@@ -244,7 +244,7 @@
 (define four-circles-a (make-four-circles-a (default-size)))
 (define four-circles-b (make-four-circles-b (default-size)))
 
-;;; (make-wedge bgcolor fgcolor size) -> image?
+;;; (two-wedges bgcolor fgcolor size) -> image?
 ;;;   bgcolor : color?
 ;;;   fgcolor : color?
 ;;;   size : positive-integer?
@@ -306,7 +306,7 @@
 (define layers
   (let ([standard-pieces
          (list three-rects-a three-rects-b
-               missing-oval-a missing-oval-b
+               diagonal-oval-a diagonal-oval-b
                stripes-a stripes-b
                four-circles-a four-circles-b
                two-wedges-a two-wedges-b)])
