@@ -37,6 +37,7 @@
 (require "ellipse.rkt")
 (require "circle.rkt")
 (require "curve.rkt")
+(require "wedge.rkt")
 (require "transformations.rkt")
 (require "combinations.rkt")
 
@@ -51,5 +52,6 @@
   (all-from-out "ellipse.rkt")
   (all-from-out "circle.rkt")
   (all-from-out "curve.rkt")
+  (all-from-out "wedge.rkt")
   (all-from-out "transformations.rkt")
   (all-from-out "combinations.rkt"))
