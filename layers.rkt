@@ -9,6 +9,8 @@
 ;; Author:
 ;;   Samuel A. Rebelsky
 
+(provide all-defined/out)
+
 ; +----------+-------------------------------------------------------
 ; | Settings |
 ; +----------+
