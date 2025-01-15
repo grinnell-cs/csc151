@@ -304,13 +304,18 @@
 ;;; Create a layers puzzle with count layers, selecting from among the pairs of pieces
 ;;; (of which there must be at least count pairs).
 (define layers
-  (let ([standard-pieces
-         (list three-rects-a three-rects-b
-               diagonal-oval-a diagonal-oval-b
-               stripes-a stripes-b
-               four-circles-a four-circles-b
-               two-wedges-a two-wedges-b)])
-    (lambda (count . stuff)
+  (lambda (count . stuff)
+    (let ([standard-pieces
+           (list (make-three-rects-a (default-size))
+                 (make-three-rects-b (default-size))
+                 (make-diagonal-oval-a (default-size))
+                 (make-diagonal-oval-b (default-size))
+                 (make-stripes-a (default-size))
+                 (make-stripes-b (default-size))
+                 (make-four-circles-a (default-size))
+                 (make-four-circles-b (default-size))
+                 (make-two-wedges-a (default-size))
+                 (make-two-wedges-b (default-size)))])
       (let ([pieces (if (null? stuff) standard-pieces stuff)])
         (cond
           [(< (length pieces) (* 2 count))
