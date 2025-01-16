@@ -133,7 +133,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a polygon built from the points ~e"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (polygon-points img))))]
   #:methods gen:img-make-pict
   [(define image-make-pict
@@ -186,7 +186,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a polygon built from the points ~e"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (polygon-points img))))]
   #:methods gen:img-make-pict
   [(define image-make-pict
@@ -265,7 +265,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a polygon built from the points ~e"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (polygon-points img))))]
   #:methods gen:img-make-pict
   [(define image-make-pict

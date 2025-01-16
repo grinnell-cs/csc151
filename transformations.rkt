@@ -444,7 +444,7 @@
              [voff (%vshifted-voff img)])
          (if (< voff 0)
              (format "~a, shifted up by ~a" subdesc (- voff))
-             (format "~a, shifted dow by ~a" subdesc voff)))))]
+             (format "~a, shifted down by ~a" subdesc voff)))))]
   #:methods gen:img-make-pict
   [(define image-make-pict
      (lambda (img)

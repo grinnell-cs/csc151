@@ -95,7 +95,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a ~a-by-~a ellipse"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (ellipse-width img)
                (ellipse-height img))))]
   #:methods gen:img-make-pict
@@ -146,11 +146,19 @@
 (sstruct %outlined-ellipse %ellipse (line-width)
   #:cloneable
   #:methods gen:outlined []
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-ellipse-~ax~a.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (image-width img)
+               (image-height img))))]
   #:methods gen:img-make-desc
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a ~a-by-~a ellipse"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (ellipse-width img)
                (ellipse-height img))))]
   #:methods gen:img-make-pict

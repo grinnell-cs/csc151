@@ -51,7 +51,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a ~a-by-~a isosceles triangle"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (isosceles-triangle-width img)
                (isosceles-triangle-height img))))]
   #:methods gen:img-make-stru
@@ -116,7 +116,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a ~a-by-~a isosceles-triangle"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (isosceles-triangle-width img)
                (isosceles-triangle-height img))))]
   #:methods gen:img-make-stru
@@ -257,7 +257,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a equilateral triangle with edge length ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (equilateral-triangle-edge img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
@@ -308,7 +308,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a equilateral-triangle with edge-length ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (equilateral-triangle-edge img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru

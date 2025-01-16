@@ -56,7 +56,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a curved ~a line of width ~a connecting (~a,~a) to (~a,~a)"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (round (%curve-line-width img))
                (pt-x (%curve-source img))
                (pt-y (%curve-source img))
@@ -161,7 +161,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a filled ~a curve connecting (~a,~a) to (~a,~a)"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (pt-x (%curve-source img))
                (pt-y (%curve-source img))
                (pt-x (%curve-target img))

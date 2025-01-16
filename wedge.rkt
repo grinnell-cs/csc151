@@ -95,7 +95,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a wedge of radius ~a and angle ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (wedge-radius img)
                (wedge-angle img))))]
   #:methods gen:img-make-pict

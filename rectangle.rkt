@@ -51,7 +51,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a ~a-by-~a rectangle"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (rectangle-width img)
                (rectangle-height img))))]
   #:methods gen:img-make-pict
@@ -122,7 +122,7 @@
                (rectangle-width img)
                (rectangle-height img)
                (line-width img)
-               (color->color-name (image-color img)))))]
+               (describe-color (image-color img)))))]
   #:methods gen:img-make-pict
   [(define image-make-pict
      (lambda (img)

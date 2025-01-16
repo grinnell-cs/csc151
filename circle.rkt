@@ -48,7 +48,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a circle with diameter ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (ellipse-width img))))]
   #:methods gen:img-make-pict
   [(define image-make-pict
@@ -98,7 +98,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a circle with diameter ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (ellipse-width img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru

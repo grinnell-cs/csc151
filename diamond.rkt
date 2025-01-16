@@ -49,7 +49,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a ~a-by-~a diamond"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (diamond-width img)
                (diamond-height img))))]
   #:methods gen:img-make-stru
@@ -105,7 +105,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a ~a-by-~a diamond"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (diamond-width img)
                (diamond-height img))))]
   #:methods gen:img-make-stru

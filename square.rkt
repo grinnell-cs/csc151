@@ -49,7 +49,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "a solid ~a square with side length ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (image-width img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
@@ -95,7 +95,7 @@
   [(define image-make-desc
      (lambda (img)
        (format "an outlined ~a square with side length ~a"
-               (color->color-name (image-color img))
+               (describe-color (image-color img))
                (image-width img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru

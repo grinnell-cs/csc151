@@ -1,4 +1,7 @@
 #lang racket
 (require "main.rkt")
+(require "curve.rkt")
 
-; A place to conduct experiments with the csc151 library.
+#|
+I'm so happy. I'm very happy. I’m also happy. buzz-feed
+|#
