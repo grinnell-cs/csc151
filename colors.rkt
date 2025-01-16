@@ -938,3 +938,10 @@
          (* 1/2 (+ (rgb-blue c1) (rgb-blue c2)))
          (* 1/2 (+ (rgb-alpha c1) (rgb-alpha c2))))))
 
+; +-----------------+------------------------------------------------
+; | A few constants |
+; +-----------------+
+
+;;; transparent -> rgb?
+;;; The "transparent" (invisible) color.
+(define transparent (rgb 0 0 0 0))
