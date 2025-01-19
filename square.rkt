@@ -94,9 +94,10 @@
   #:methods gen:img-make-desc
   [(define image-make-desc
      (lambda (img)
-       (format "an outlined ~a square with side length ~a"
+       (format "an outlined ~a square with side length ~a and line-width ~a"
                (describe-color (image-color img))
-               (image-width img))))]
+               (square-side img)
+               (line-width img))))]
   #:methods gen:img-make-stru
   [(define image-make-stru
      (lambda (img)
