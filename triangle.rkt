@@ -144,7 +144,7 @@
 ;;;   line-width : positive-integer?
 ;;;   description : string?
 ;;; An outlined isosceles-triangle whose inner size is width-by-height with
-;;; an outlined of `line-width`.
+;;; an outline of `line-width`.
 (define outlined-isosceles-triangle
   (lambda (width
            height
@@ -403,6 +403,213 @@
                    (solid-equilateral-triangle edge color description))
                  (lambda (color line-width)
                    (outlined-equilateral-triangle edge color line-width description))
+                 mode
+                 color-or-pen)))
+
+; +-----------------------+--------------------------------------
+; | Solid right triangles |
+; +-----------------------+
+
+(sstruct %solid-right-triangle %solid-polygon (width height)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/solid-~a-~ax~a-right-triangle.png"
+               (or dir ".")
+               (if (precise-polygon-colors)
+                   (color->hex (image-color img))
+                   (color->color-name (image-color img)))
+               (right-triangle-width img)
+               (right-triangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "a solid ~a ~a-by-~a right triangle"
+               (describe-color (image-color img))
+               (right-triangle-width img)
+               (right-triangle-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'solid-right-triangle
+             (right-triangle-width img)
+             (right-triangle-height img)
+             (image-color img))))]
+  #:done)
+
+(define solid-right-triangle? %solid-right-triangle?)
+(define solid-right-triangle-width  %solid-right-triangle-width)
+(define solid-right-triangle-height %solid-right-triangle-height)
+
+;;; (right-triangle-points width height) -> (list-of pt?)
+;;;   width : positive-real?
+;;;   height : positive-real?
+;;; Compute the points in an right triangle of the given
+;;; width and height.
+(define right-triangle-points
+  (lambda (width height)
+    (list (pt 0 0) (pt width height) (pt 0 height))))
+
+;;; (solid-right-triangle width height color [desc]) -> image?
+;;;   width : positive-real?
+;;;   height : positive-real?
+;;;   color : color?
+;;;   description : string?
+;;; A solid right triangle of the given width, height, and color.
+(define solid-right-triangle
+  (lambda (width
+           height
+           color
+           [description #f])
+    (param-check! solid-right-triangle 1 nonnegative-real? width)
+    (param-check! solid-right-triangle 2 nonnegative-real? height)
+    (param-check! solid-right-triangle 3 color? color)
+    (when description
+      (param-check! solid-right-triangle 4 string? description))
+    (%solid-right-triangle description
+                           #f
+                           #f
+                           #f
+                           (color->rgb color)
+                           (right-triangle-points width height)
+                           width
+                           height)))
+
+(sstruct %outlined-right-triangle %outlined-polygon (width height)
+  #:cloneable
+  #:methods gen:img-fname
+  [(define .image-fname
+     (lambda (img dir)
+       (format "~a/outlined-~a-~a-~ax~a-right-triangle.png"
+               (or dir ".")
+               (color->color-name (image-color img))
+               (line-width img)
+               (right-triangle-width img)
+               (right-triangle-height img))))]
+  #:methods gen:img-make-desc
+  [(define image-make-desc
+     (lambda (img)
+       (format "an outlined ~a ~a-by-~a right-triangle"
+               (describe-color (image-color img))
+               (right-triangle-width img)
+               (right-triangle-height img))))]
+  #:methods gen:img-make-stru
+  [(define image-make-stru
+     (lambda (img)
+       (list 'outlined-right-triangle
+             (right-triangle-width img)
+             (right-triangle-height img)
+             (image-color img)
+             (line-width img))))]
+  #:done)
+
+; +--------------------------+---------------------------------------
+; | Outlined right triangles |
+; +--------------------------+
+
+(define outlined-right-triangle? %outlined-right-triangle?)
+(define outlined-right-triangle-width %outlined-right-triangle-width)
+(define outlined-right-triangle-height %outlined-right-triangle-height)
+
+;;; (outlined-right-triangle width height color line-width [desc]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   color : color?
+;;;   line-width : positive-integer?
+;;;   description : string?
+;;; An outlined right-triangle whose inner size is width-by-height with
+;;; an outline of `line-width`.
+(define outlined-right-triangle
+  (lambda (width
+           height
+           color
+           line-width
+           [description #f])
+    (param-check! outlined-right-triangle 1 nonnegative-real? width)
+    (param-check! outlined-right-triangle 2 nonnegative-real? height)
+    (param-check! outlined-right-triangle 3 color? color)
+    (param-check! outlined-right-triangle 4 positive-integer? line-width)
+    (when description
+      (param-check! outlined-right-triangle 5 string? description))
+    (%outlined-right-triangle description
+                              #f
+                              #f
+                              #f
+                              (color->rgb color)
+                              (right-triangle-points width height)
+                              line-width
+                              width
+                              height)))
+
+;;; (right-triangle-polygon? poly) -> boolean?
+;;;   poly : polygon?
+;;; Determine if poly is a right-triangle.
+;;;
+;;; Not currently implemented.
+(define right-triangle-polygon?
+  (lambda (poly)
+    #f))
+
+;;; (right-triangle? img) -> boolean?
+;;;   img : image?
+;;; Determine if `img` is an right-triangle.
+(define right-triangle?
+  (lambda (img)
+    (or (solid-right-triangle? img)
+        (outlined-right-triangle? img)
+        (and (transformed? img)
+             (preserved? img)
+             (right-triangle? (subimage img))))))
+
+;;; (right-triangle-height d) -> real?
+;;;   tri : right-triangle?
+;;; Determine the height of an right-triangle
+(define right-triangle-height
+  (lambda (tri)
+    (cond
+      [(solid-right-triangle? tri)
+       (solid-right-triangle-height tri)]
+      [(outlined-right-triangle? tri)
+       (outlined-right-triangle-height tri)]
+      [(and (transformed? tri) (preserved? tri))
+       (right-triangle-height (subimage tri))]
+      [else
+       (error 'right-triangle-height "not an right-triangle ~a" tri)])))
+
+;;; (right-triangle-width tri) -> real?
+;;;   tri : right-triangle?
+;;; Determine the width of an right-triangle
+(define right-triangle-width
+  (lambda (tri)
+    (cond
+      [(solid-right-triangle? tri)
+       (solid-right-triangle-width tri)]
+      [(outlined-right-triangle? tri)
+       (outlined-right-triangle-width tri)]
+      [(and (transformed? tri) (preserved? tri))
+       (right-triangle-width (subimage tri))]
+      [else
+       (error 'right-triangle-width "not an right-triangle ~a" tri)])))
+
+; +-----------------------------+---------------------------------
+; | 2htdp-style right triangles |
+; +-----------------------------+
+
+;;; (right-triangle width height mode color-or-pen [description]) -> image?
+;;;   width : nonnegative-real?
+;;;   height : nonnegative-real?
+;;;   mode : (one-of "solid" "outline" integer?)
+;;;   color-or-pen : (any-of color? pen?)
+;;;   description : string?
+;;; Create the described polygon.
+(define right-triangle
+  (lambda (width height mode color-or-pen [description #f])
+    (2htdp-style 'right-triangle
+                 (lambda (color)
+                   (solid-right-triangle width height color description))
+                 (lambda (color line-width)
+                   (outlined-right-triangle width height color line-width description))
                  mode
                  color-or-pen)))
 
