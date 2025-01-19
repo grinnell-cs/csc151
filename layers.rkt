@@ -22,7 +22,7 @@
 ;;;   size : positive-integer?
 ;;; Set the default size to size.
 (define default-size
-  (let ([ds 500])
+  (let ([ds 512])
     (lambda info
       (when (not (null? info))
         (let ([new-size (car info)])
