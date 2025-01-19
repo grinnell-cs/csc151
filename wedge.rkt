@@ -86,7 +86,7 @@
   #:methods gen:img-fname
   [(define .image-fname
      (lambda (img dir)
-       (format "~a/solid-~a-wedge-~a~a.png"
+       (format "~a/solid-~a-wedge-~a-~a.png"
                (or dir ".")
                (color->color-name (image-color img))
                (wedge-radius img)
