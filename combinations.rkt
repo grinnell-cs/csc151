@@ -398,7 +398,7 @@
                 0
                 0))))
 
-;;; (overlay-at-origin i1 i2 ... in [description]) -> image?
+;;; (overlay/origin i1 i2 ... in [description]) -> image?
 ;;;   i1 : image?
 ;;;   i2 : image?
 ;;;   ...
@@ -406,7 +406,7 @@
 ;;;   description: string? (optional)
 ;;; Overlay the images by their top-left corners (the "origin" in graphical
 ;;; terms)
-(define overlay-at-origin
+(define overlay/origin
   (lambda images
     (apply overlay/align (append (list "left" "top") images))))
 
