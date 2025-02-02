@@ -179,7 +179,7 @@
   [(define .image-fname
      (lambda (img dir)
        (make-image-fname dir
-                         (format "outlined~a-~a-polygon-"
+                         (format "outlined-~a-~a-polygon-"
                                  (color->color-name (image-color img))
                                  (line-width img)))))]
   #:methods gen:img-make-desc
