@@ -47,7 +47,7 @@
 ;;; Pretty print an s expression
 (define pp
   (lambda (sexp)
-    (let ([tmp (pretty-format sexp 60 #:mode 'display)])
+    (let ([tmp (pretty-format sexp 60 #:mode 'write)])
       (display (regexp-replace* "\n" tmp "\n     "))
       (newline))))
 
