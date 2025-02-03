@@ -257,6 +257,8 @@
                  [(hash-has-key? procs fun)
                   (cons (apply-fun (hash-ref procs fun) (cdr lst))
                         true)]
+                 [(equal? fun 'apply)
+                  (cons (cons (cadr lst) (cdaddr lst)) #t)]
                  [(equal? fun 'map)
                   (one-step-map lst)]
                  [(equal? fun 'reduce)
