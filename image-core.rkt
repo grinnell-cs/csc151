@@ -1018,14 +1018,50 @@
           (kernel (- pos 1))))
       result)))
 
-;;; (pixel-plus-map make-color img [description]) -> image?
-;;;   make-color : procedure?
+;;; (pixel-pos-map transformation img [description]) -> image?
+;;;   transformation : procedure?
 ;;;   img : img?
 ;;;   description : string?
 ;;; Create a new image by applying `transformation` at each position
 ;;; in the image.
 ;;;
 ;;; `transformation` should take the following parameters:
+;;;   pixel : rgb? (corresponding to the color of the current pixel)
+;;;   col : exact-nonnegative-integer? (corresponding to the column 
+;;;         of the current pixel)
+;;;   row : exact-nonnegative-integer? (corresponding to the row 
+;;;         of the current pixel)
+(define pixel-pos-map
+  (lambda (transformation img [description #f])
+    (let* ([w (image-width img)]
+           [h (image-height img)]
+           [orig (image-bitmap img)]
+           [result (bitmap w h (or description
+                                   (format "a transformed version of ~a"
+                                           (image-description img))))]
+           [bits (image-bitmap result)])
+      (let kernel ([col 0]
+                   [row 0]
+                   [pos 0])
+        (when (< row h)
+          (cond
+            [(>= col w)
+             (kernel 0 (+ row 1) pos)]
+            [else
+             (let ([newcolor (transformation (vector-ref orig pos)
+                                            col row)])
+               (vector-set! bits pos newcolor))
+             (kernel (+ col 1) row (+ pos 1))])))
+      result)))
+
+;;; (pixel-plus-map make-color img [description]) -> image?
+;;;   make-color : procedure?
+;;;   img : img?
+;;;   description : string?
+;;; Create a new image by applying `make-color` at each position
+;;; in the image.
+;;;
+;;; `make-color` should take the following parameters:
 ;;;   pixel : rgb? (corresponding to the color of the current pixel)
 ;;;   col : integer? (corresponding to the column of the current pixel)
 ;;;   row : integer? (corresponding to the row of the current pixel)
@@ -1061,31 +1097,31 @@
                     [lastrow? (>= row (- h 1))]
                     [northwest (if (or (zero? row) (zero? col))
                                   default
-                                  (vector-ref bits (- pos 1)))]
+                                  (vector-ref orig (- pos 1)))]
                     [north (if (zero? row)
                                default
-                               (vector-ref bits (- pos w)))]
+                               (vector-ref orig (- pos w)))]
                     [northeast (if (or (zero? row) lastcol?)
                                    default
-                                   (vector-ref bits (+ 1 (- pos w))))]
+                                   (vector-ref orig (+ 1 (- pos w))))]
                     [west (if (zero? col)
                               default
-                              (vector-ref bits (- pos 1)))]
+                              (vector-ref orig (- pos 1)))]
                     [east (if (>= col (- w 1))
                               default
-                              (vector-ref bits (+ pos 1)))]
+                              (vector-ref orig (+ pos 1)))]
                     [southwest (if (or lastrow? (zero? col))
                                    default
-                                   (vector-ref bits (+ pos w -1)))]
+                                   (vector-ref orig (+ pos w -1)))]
                     [south (if lastrow?
                                default
-                               (vector-ref bits (+ pos w)))]
+                               (vector-ref orig (+ pos w)))]
                     [southeast (if (or lastrow? lastcol?)
                                    default
-                                   (vector-ref bits (+ pos w 1)))])
+                                   (vector-ref orig (+ pos w 1)))])
                (vector-set! bits
                             pos
-                            (make-color (vector-ref bits pos)
+                            (make-color (vector-ref orig pos)
                                         col row
                                         northwest north northeast
                                         west east
