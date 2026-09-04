@@ -1,11 +1,21 @@
 #lang racket
 
-;;; File:
-;;;   colors.rkt
-;;; Author:
-;;;   Samuel A. Rebelsky
-;;; Summary:
-;;;   Some simple utilities for dealing with colors.
+;; File:
+;;   colors.rkt
+;; Author:
+;;   Samuel A. Rebelsky
+;; Summary:
+;;   Some simple utilities for dealing with colors.
+;; Notes:
+;;   We have (at least) five kinds of colors:
+;;   * RGBA colors (also RGB) (the internal representation),
+;;   * HSV colors,
+;;   * color names (strings),
+;;   * RGB strings (red/green/blue), and
+;;   * hex codes (strings).
+;;
+;;   This file references 2htdp colors, which are from the Racket
+;;   2htdp library. Those need not be translated to Scamper.
 
 (require (prefix-in 2htdp: 2htdp/image))
 (require (except-in racket/draw make-color make-pen))
@@ -140,22 +150,22 @@
 ;;; Determine if `val` is an RGB color.
 (define rgb? rgba?)
 
-;;; (rgb-red color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;; (rgb-red color) -> (all-of integer? (cut (<= 0 <> 255)))
 ;;;   color : rgba?
 ;;; Extract the red component of `color`.
 (define rgb-red rgba-red)
 
-;;; (rgb-green color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;; (rgb-green color) -> (all-of integer? (cut (<= 0 <> 255)))
 ;;;   color : rgba?
 ;;; Extract the green component of `color`.
 (define rgb-green rgba-green)
 
-;;; (rgb-blue color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;; (rgb-blue color) -> (all-of integer? (cut (<= 0 <> 255)))
 ;;;   color : rgba?
 ;;; Extract the blue component of `color`.
 (define rgb-blue rgba-blue)
 
-;;; (rgb-alpha color) -> (and/c integer? (cut (<= 0 <> 255)))
+;;; (rgb-alpha color) -> (all-of integer? (cut (<= 0 <> 255)))
 ;;;   color : rgba?
 ;;; Extract the alpha component of `color`.
 (define rgb-alpha rgba-alpha)
@@ -195,13 +205,13 @@
              (send the-color-database find-color str)
              #t))))
 
-;;; (all-color-names) -> list-of string?
+;;; (all-color-names) -> (list-of string?)
 ;;; Get a list of all the color names.
 (define all-color-names
   (lambda ()
     (send the-color-database get-names)))
 
-;;; (find-colors name) -> list-of string?
+;;; (find-colors name) -> (list-of string?)
 ;;;   name : string?
 ;;; Extract all the colors that include "name".
 (define find-colors
@@ -221,7 +231,7 @@
 
 ;;; (rgb-string? str) -> boolean?
 ;;;   str : string?
-;;; Determines if str appears to be a color string.
+;;; Determines if str appears to be a RGB string (of the form R/G/B).
 (define rgb-string?
   (lambda (str)
     (and (rgb-string->rgb str)
@@ -327,7 +337,7 @@
           [a (inexact->exact (max 0 (min 255 alpha)))])
       (values h s v a))))
 
-;;; (hsv hue saturation value [alpha]) -> color?
+;;; (hsv hue saturation value [alpha]) -> hsv?
 ;;;   hue : (all-of nonnegative-real? (less-than 360))
 ;;;   saturation : (all-of nonnegative-real? (less-than 100))
 ;;;   value : (all-of nonnegative-real? (less-than 100))
@@ -402,7 +412,7 @@
                      (+ hue 6)
                      hue)))))
 
-;;; (rgb-saturation rgb) -> integer? (between 0 and 100)
+;;; (rgb-saturation rgb) -> (all-of integer? (cut (<= 0 <> 100)))
 ;;;   rgb : color?
 ;;; Convert rgb to the appropriate saturation.
 (define rgb-saturation
@@ -414,7 +424,7 @@
                                 (color-green c)
                                 (color-blue c)))))
 
-;;; (rgb-saturation-helper cmax cmin) -> integer? [0..100]
+;;; (rgb-saturation-helper cmax cmin) -> (all-of integer? (cut (<= 0 <> 100)))
 ;;;   cmax : integer? [0..255]
 ;;;   cmin : integer? [0..255]
 ;;; Find the saturation given the max and min components.
@@ -424,7 +434,7 @@
         0
         (inexact->exact (round (* 100 (/ (- cmax cmin) cmax)))))))
 
-;;; (rgb-value rgb) -> integer? [0..100]
+;;; (rgb-value rgb) -> (all-of integer? (cut (<= 0 <> 100)))
 ;;;   rgb : color?
 ;;; Find the value.
 (define rgb-value
@@ -461,9 +471,9 @@
 ; | Color conversion |
 ; +------------------+
 
-;;; (color-name->rgb name) -> (or/c color? false?)
+;;; (color-name->rgb name) -> (or/c rgb? false?)
 ;;;    name : (or/c symbol? string?)
-;;; Convert a color name to a color. Returns false if the name cannot
+;;; Convert a color name to an RGB color. Returns false if the name cannot
 ;;; be converted.
 (define color-name->rgb
   (lambda (name)
