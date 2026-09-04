@@ -111,7 +111,7 @@
 
 (define outlined-circle? %outlined-circle?)
 
-;;; (outlined-circle diameter color [description]) -> image?
+;;; (outlined-circle diameter line-width color [description]) -> image?
 ;;;   diameter : nonnegative-integer?
 ;;;   color : color?
 ;;;   line-width : positive-integer?
